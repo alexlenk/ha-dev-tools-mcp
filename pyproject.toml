@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "MCP server for Home Assistant development tools"
 readme = "README.md"
 authors = [{name = "Home Assistant Development Power"}]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 license = {text = "MIT"}
 keywords = [
     "home-assistant",
@@ -20,8 +20,8 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Software Development :: Tools"
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development"
 ]
 dependencies = [
     "mcp>=1.0.0",
@@ -46,8 +46,6 @@ ha-dev-tools-mcp = "ha_dev_tools.__main__:run"
 dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
-    "pytest-homeassistant-custom-component>=0.13.0",
-    "homeassistant>=2026.1.0",
     "hypothesis>=6.0.0",
     "black>=23.0.0",
     "mypy>=1.0.0",
@@ -67,5 +65,5 @@ line-length = 88
 target-version = ['py311']
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 strict = true
