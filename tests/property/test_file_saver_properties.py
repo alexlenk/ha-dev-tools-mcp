@@ -97,8 +97,9 @@ def test_property_file_save_creates_local_file(file_saver, cleanup_temp_dir, con
         # Verify file is readable
         assert local_path.is_file(), f"Path should be a file: {result.local_path}"
         
-        # Verify content matches
-        saved_content = local_path.read_text(encoding='utf-8')
+        # Verify content matches (use newline='' to preserve original line endings)
+        with open(local_path, 'r', encoding='utf-8', newline='') as f:
+            saved_content = f.read()
         assert saved_content == content, "Saved content should match original"
         
     except SecurityError:

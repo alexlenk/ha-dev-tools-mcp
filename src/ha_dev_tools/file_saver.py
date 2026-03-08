@@ -61,8 +61,8 @@ class FileSaver:
         # Create parent directories
         local_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Write file
-        async with aiofiles.open(local_path, 'w', encoding='utf-8') as f:
+        # Write file (newline='' preserves original line endings)
+        async with aiofiles.open(local_path, 'w', encoding='utf-8', newline='') as f:
             await f.write(content)
         
         return SaveResult(
