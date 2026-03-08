@@ -229,96 +229,35 @@ class ConfigurationManager(Protocol):
         ...
 
 
-# Download-related types
+# File save related types
 
-class DownloadErrorCode(str, Enum):
-    """Error codes for download operations."""
+class SaveErrorCode(str, Enum):
+    """Error codes for file save operations."""
     
     # Parameter validation
-    INVALID_PARAMETERS = "INVALID_PARAMETERS"
     MUTUALLY_EXCLUSIVE = "MUTUALLY_EXCLUSIVE_PARAMETERS"
-    BATCH_SIZE_EXCEEDED = "BATCH_SIZE_EXCEEDED"
+    INVALID_PATH = "INVALID_PATH"
     
     # Security
-    INVALID_DOWNLOAD_DIR = "INVALID_DOWNLOAD_DIR"
     PATH_TRAVERSAL = "PATH_TRAVERSAL_DETECTED"
-    OUTSIDE_CONFIG_DIR = "OUTSIDE_CONFIG_DIR"
     FILE_TOO_LARGE = "FILE_TOO_LARGE"
     
     # File system
     DISK_SPACE = "INSUFFICIENT_DISK_SPACE"
     PERMISSION_DENIED = "PERMISSION_DENIED"
-    FILE_NOT_FOUND = "FILE_NOT_FOUND"
-    
-    # Download
-    NETWORK_ERROR = "NETWORK_ERROR"
-    HASH_MISMATCH = "HASH_MISMATCH"
-    COMPRESSION_ERROR = "COMPRESSION_ERROR"
-    REGISTRY_ERROR = "REGISTRY_ERROR"
-    FILE_CHANGED = "FILE_CHANGED_DURING_RESUME"
+    WRITE_FAILED = "WRITE_FAILED"
 
 
 @dataclass
-class DownloadResult:
-    """Result of a single file download."""
+class SaveResult:
+    """Result of a file save operation."""
     local_path: str
     file_size: int
-    content_hash: str
     remote_path: str
-    compressed: bool
-    compression_ratio: Optional[float]
-    download_time: float
-    timestamp: datetime
 
 
 @dataclass
-class DownloadFailure:
-    """Information about a failed download."""
-    remote_path: str
-    error_code: str
-    error_message: str
-
-
-@dataclass
-class BatchDownloadResult:
-    """Result of a batch download operation."""
-    successful: List[DownloadResult]
-    failed: List[DownloadFailure]
-    total_size: int
-    total_time: float
-
-
-@dataclass
-class DownloadMetadata:
-    """Metadata tracked for each download."""
-    local_path: str
-    remote_path: str
-    file_size: int
-    content_hash: str
-    timestamp: datetime
-    compressed: bool
-    compression_ratio: Optional[float]
-    exists: bool  # Whether file still exists on disk
-
-
-@dataclass
-class CleanupResult:
-    """Result of cleanup operation."""
-    removed_count: int
-    freed_bytes: int
-    errors: List[str]
-
-
-@dataclass
-class DownloadConfig:
-    """Configuration for download feature."""
-    download_dir: Path
-    max_file_size: int = 100 * 1024 * 1024  # 100MB
-    compression_threshold: float = 0.10  # 10% minimum reduction
-    partial_download_ttl: int = 1  # hours
-    registry_path: Optional[Path] = None
-    
-    def __post_init__(self):
-        """Set default registry path if not provided."""
-        if self.registry_path is None:
-            self.registry_path = self.download_dir / ".download_registry.json"
+class SaveConfig:
+    """Configuration for file save feature."""
+    max_file_size: int = 10 * 1024 * 1024  # 10MB default
+    max_file_size_limit: int = 100 * 1024 * 1024  # 100MB absolute max

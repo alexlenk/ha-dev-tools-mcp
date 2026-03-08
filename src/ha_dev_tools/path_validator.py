@@ -1,48 +1,18 @@
-"""Path validation for download security."""
+"""Path validation for file save security."""
 
-from pathlib import Path
-from typing import Tuple, Optional
+from typing import Optional
+
+
+class SecurityError(Exception):
+    """Security-related error for file operations."""
+    pass
 
 
 class PathValidator:
-    """Validates download paths for security."""
+    """Validates file paths for security."""
     
     @staticmethod
-    def validate_download_dir(path: Path) -> Tuple[bool, Optional[str]]:
-        """
-        Validate download directory is in allowed location.
-        
-        Args:
-            path: Path to validate
-            
-        Returns:
-            (is_valid, error_message) tuple
-        """
-        # Must be under user's home directory or explicitly allowed paths
-        allowed_roots = [
-            Path.home(),
-            Path("/tmp"),  # For testing
-        ]
-        
-        try:
-            resolved = path.resolve()
-        except (OSError, RuntimeError) as e:
-            return False, f"Cannot resolve path: {e}"
-        
-        for root in allowed_roots:
-            try:
-                # Resolve both paths to handle symlinks (e.g., /tmp -> /private/tmp on macOS)
-                resolved_root = root.resolve()
-                resolved.relative_to(resolved_root)
-                return True, None
-            except (ValueError, OSError, RuntimeError):
-                continue
-        
-        allowed_paths_str = ', '.join(str(r) for r in allowed_roots)
-        return False, f"Download directory must be under: {allowed_paths_str}"
-    
-    @staticmethod
-    def sanitize_remote_path(remote_path: str) -> Tuple[str, bool]:
+    def sanitize_remote_path(remote_path: str) -> str:
         """
         Sanitize remote path to prevent traversal attacks.
         
@@ -50,11 +20,19 @@ class PathValidator:
             remote_path: Remote file path to sanitize
             
         Returns:
-            (sanitized_path, was_modified) tuple
+            Sanitized path safe for local filesystem
+            
+        Raises:
+            SecurityError: If path contains traversal sequences
         """
-        # Remove any path traversal sequences
-        original = remote_path
-        sanitized = remote_path.replace("../", "").replace("..\\", "")
-        sanitized = sanitized.lstrip("/\\")
+        # Strip leading slashes
+        path = remote_path.lstrip('/')
         
-        return sanitized, sanitized != original
+        # Check for traversal sequences
+        if '..' in path or path.startswith('/') or path.startswith('\\'):
+            raise SecurityError(f"Invalid path: {remote_path}")
+        
+        # Normalize path separators
+        path = path.replace('\\', '/')
+        
+        return path
