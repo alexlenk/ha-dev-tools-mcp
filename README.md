@@ -11,6 +11,7 @@ A Model Context Protocol (MCP) server providing comprehensive development tools 
 - **Automatic Backups**: Create backups before modifying configuration files
 - **File Metadata**: Get file size, modification time, and other metadata
 - **Content Pagination**: Handle large files with efficient pagination support
+- **Local File Save**: Save large files to local temp directory to avoid context window overflow
 
 ### Template Testing
 - **Template Rendering**: Test Jinja2 templates with real Home Assistant context
@@ -98,9 +99,23 @@ client = HADevTools(ha_url="http://localhost:8123", token="your_token")
 files = await client.list_config_files()
 print(f"Found {len(files)} configuration files")
 
-# Read a configuration file
+# Read a configuration file (returns content directly)
 content = await client.read_config_file("configuration.yaml")
 print(content)
+
+# Read a large file and save locally (recommended for files >50KB)
+result = await client.read_config_file("configuration.yaml", save_local=True)
+print(f"File saved to: {result['local_path']}")
+print(f"File size: {result['file_size']} bytes")
+# File is now available at the local path for direct access
+
+# Read with pagination for viewing specific sections
+partial = await client.read_config_file(
+    "configuration.yaml",
+    offset=0,
+    length=1000
+)
+print(f"First 1000 bytes: {partial['content']}")
 
 # Validate YAML before writing
 is_valid = await client.validate_yaml(new_content)
@@ -109,6 +124,47 @@ if is_valid:
     backup_path = await client.create_backup("configuration.yaml")
     await client.write_config_file("configuration.yaml", new_content)
 ```
+
+#### Working with Large Files
+
+The `save_local` parameter is designed for handling large configuration files that would overflow the AI model's context window:
+
+**When to use `save_local=True`:**
+- Files larger than 50KB
+- When you need to process the entire file locally
+- When working with large `configuration.yaml` files
+
+**When to use pagination (`offset`/`length`):**
+- Files smaller than 50KB
+- When you only need to view specific sections
+- For quick inspection of file contents
+
+**Response format with `save_local=True`:**
+```python
+{
+    "saved": True,
+    "local_path": "/tmp/ha-dev-tools/configuration.yaml",  # Unix/Linux/macOS
+    # or "C:\\Users\\Username\\AppData\\Local\\Temp\\ha-dev-tools\\configuration.yaml"  # Windows
+    "file_size": 125000,
+    "remote_path": "configuration.yaml"
+}
+```
+
+**Response format with `save_local=False` (default):**
+```python
+{
+    "saved": False,
+    "content": "homeassistant:\n  name: Home\n  ...",
+    "file_size": 1024,
+    "file_path": "configuration.yaml"
+}
+```
+
+**Important notes:**
+- `save_local` and pagination parameters (`offset`, `length`) are mutually exclusive
+- Files are saved to the system temporary directory with preserved directory structure
+- Saved files overwrite previous versions (latest version wins)
+- Maximum file size is configurable (default 10MB, max 100MB)
 
 ### Template Testing
 
@@ -159,7 +215,13 @@ The server exposes the following MCP tools:
 
 ### File Operations
 - `list_config_files` - List all configuration files
-- `read_config_file` - Read a configuration file
+- `read_config_file` - Read a configuration file with optional local save or pagination
+  - Parameters:
+    - `instance_id` (required): Home Assistant instance identifier
+    - `file_path` (required): Path to configuration file
+    - `save_local` (optional): Save to local temp directory instead of returning content (for large files >50KB)
+    - `offset` (optional): Starting byte offset for partial read (mutually exclusive with save_local)
+    - `length` (optional): Number of bytes to read (mutually exclusive with save_local)
 - `write_config_file` - Write to a configuration file
 - `create_backup` - Create a backup of a file
 - `get_file_metadata` - Get file metadata (size, mtime, etc.)
@@ -328,9 +390,65 @@ Error: Request timeout
 ```
 
 **Solution**:
-1. Use pagination with `offset` and `length` parameters
-2. Increase timeout settings in client configuration
-3. Consider splitting large files into smaller ones
+1. Use `save_local=True` for files larger than 50KB
+2. Use pagination with `offset` and `length` parameters for viewing specific sections
+3. Increase timeout settings in client configuration
+4. Consider splitting large files into smaller ones
+
+### File Save Issues
+
+**Problem**: Cannot save file locally
+```
+Error: PERMISSION_DENIED - Permission denied writing to temp directory
+```
+
+**Solution**:
+1. Check write permissions for system temp directory:
+   - Unix/Linux/macOS: `/tmp/ha-dev-tools/`
+   - Windows: `%TEMP%\ha-dev-tools\`
+2. Ensure sufficient disk space is available
+3. Check that the temp directory is not read-only
+
+**Problem**: File too large to save
+```
+Error: FILE_TOO_LARGE - File size exceeds limit
+```
+
+**Solution**:
+1. Default limit is 10MB, maximum is 100MB
+2. Configure `max_file_size` in server settings if needed
+3. Consider using pagination to work with specific sections instead
+4. Split large configuration files into smaller includes
+
+**Problem**: Mutually exclusive parameters error
+```
+Error: MUTUALLY_EXCLUSIVE_PARAMETERS - save_local and pagination are mutually exclusive
+```
+
+**Solution**:
+1. Choose either `save_local=True` OR pagination (`offset`/`length`), not both
+2. Use `save_local` for large files (>50KB) that need full processing
+3. Use pagination for viewing specific sections of any file
+
+### Temporary File Location
+
+Saved files are stored in the system temporary directory:
+
+- **Unix/Linux/macOS**: `/tmp/ha-dev-tools/`
+- **Windows**: `%TEMP%\ha-dev-tools\` (typically `C:\Users\Username\AppData\Local\Temp\ha-dev-tools\`)
+
+Files are organized to mirror the remote directory structure:
+```
+/tmp/ha-dev-tools/
+├── configuration.yaml
+├── automations.yaml
+├── scripts.yaml
+└── packages/
+    ├── lights.yaml
+    └── sensors.yaml
+```
+
+The operating system automatically cleans up temp files periodically. Files are overwritten on subsequent saves (latest version wins).
 
 ## Related Projects
 
