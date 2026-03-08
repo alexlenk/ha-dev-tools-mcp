@@ -1,11 +1,14 @@
-"""MCP Server for Home Assistant Configuration Manager.
+"""MCP Server for Home Assistant Development Tools.
 
 This module implements the Model Context Protocol (MCP) server that provides
-Kiro with comprehensive access to Home Assistant through REST API endpoints.
+comprehensive development tools for Home Assistant through REST API endpoints.
 
 The server translates MCP tool calls into HTTP requests to:
-1. Custom Integration API: File access and log retrieval
+1. HA Dev Tools Integration API: File access and log retrieval
 2. Official Home Assistant API: Entity states, services, templates, history, and system configuration
+
+Package: ha-dev-tools-mcp
+Integration: ha_dev_tools
 """
 
 import asyncio
@@ -40,7 +43,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # MCP Server instance
-server = Server("ha-config-manager")
+server = Server("ha-dev-tools")
 
 # Global API client instance (initialized in main())
 api_client: HAAPIClient = None

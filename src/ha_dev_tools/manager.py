@@ -1,4 +1,11 @@
-"""Configuration Manager implementation."""
+"""Home Assistant Development Tools - Configuration Manager.
+
+This module provides the core configuration management functionality for
+Home Assistant development, including file operations, validation, and
+multi-instance support.
+
+Package: ha-dev-tools-mcp
+"""
 
 import logging
 import os

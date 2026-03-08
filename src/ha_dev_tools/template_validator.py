@@ -1,4 +1,10 @@
-"""Template validation and error formatting utilities for Home Assistant templates."""
+"""Template validation and error formatting utilities for Home Assistant templates.
+
+This module provides comprehensive template validation, syntax checking, and
+error formatting for Jinja2 templates used in Home Assistant development.
+
+Package: ha-dev-tools-mcp
+"""
 
 import re
 from dataclasses import dataclass

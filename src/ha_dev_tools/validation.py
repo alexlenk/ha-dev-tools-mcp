@@ -2,6 +2,8 @@
 
 This module provides validation functions for all tool parameters to ensure
 they meet security and format requirements before being processed.
+
+Package: ha-dev-tools-mcp
 """
 
 import re

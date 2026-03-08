@@ -1,4 +1,11 @@
-"""API-based Home Assistant connection implementation."""
+"""API-based Home Assistant connection implementation.
+
+This module provides HTTP API client functionality for connecting to
+Home Assistant through the HA Dev Tools integration API endpoints.
+
+Package: ha-dev-tools-mcp
+Integration: ha_dev_tools
+"""
 
 import asyncio
 import gzip

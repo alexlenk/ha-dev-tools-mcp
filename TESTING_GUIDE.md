@@ -1,17 +1,16 @@
 # MCP Server Testing Guide
 
-This guide covers different ways to test the Home Assistant Configuration Manager MCP Server.
+This guide covers different ways to test the HA Dev Tools MCP Server.
 
 ## Prerequisites
 
 1. **Home Assistant Instance**: You need a running Home Assistant instance with:
-   - The HA Config Manager custom integration installed
+   - The HA Dev Tools custom integration installed
    - A long-lived access token generated
 
 2. **Python Environment**: Python 3.12+ with dependencies installed:
    ```bash
    source .venv/bin/activate
-   cd src/config-manager
    pip install -e .
    ```
 
@@ -28,12 +27,12 @@ This guide covers different ways to test the Home Assistant Configuration Manage
 Run the complete test suite with mocked Home Assistant responses:
 
 ```bash
-# From project root
-PYTHONPATH=src/config-manager/src .venv/bin/python -m pytest src/config-manager/tests/ -v
+# From repository root
+PYTHONPATH=src .venv/bin/python -m pytest tests/ -v
 
 # Run specific test categories
-PYTHONPATH=src/config-manager/src .venv/bin/python -m pytest src/config-manager/tests/test_api_client_properties.py -v
-PYTHONPATH=src/config-manager/src .venv/bin/python -m pytest src/config-manager/tests/test_tool_registration.py -v
+PYTHONPATH=src .venv/bin/python -m pytest tests/test_api_client_properties.py -v
+PYTHONPATH=src .venv/bin/python -m pytest tests/test_tool_registration.py -v
 ```
 
 **What this tests**: All functionality with mocked HTTP responses. Fast and doesn't require a real HA instance.
