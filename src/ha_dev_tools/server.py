@@ -81,7 +81,12 @@ async def handle_list_tools() -> List[Tool]:
         ),
         Tool(
             name="read_config_file",
-            description="Read configuration file content from Home Assistant with support for large files via chunking and optional compression",
+            description=(
+                "Read configuration file content from Home Assistant with support for large files. "
+                "For files >50KB, use save_local=true to save to local temp directory instead of returning content. "
+                "For smaller files or viewing specific sections, use pagination (offset/limit) or return content directly. "
+                "Note: save_local and pagination (offset/limit) are mutually exclusive."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -89,14 +94,23 @@ async def handle_list_tools() -> List[Tool]:
                         "type": "string",
                         "description": "Path to the configuration file (e.g., 'configuration.yaml')"
                     },
+                    "save_local": {
+                        "type": "boolean",
+                        "description": (
+                            "Save file to local temp directory instead of returning content (for large files >50KB). "
+                            "Returns local file path, file size, and remote path. "
+                            "Files are saved to system temp directory (e.g., /tmp/ha-dev-tools/ on Unix, %TEMP%\\ha-dev-tools\\ on Windows). "
+                            "Cannot be used with offset or limit parameters."
+                        )
+                    },
                     "offset": {
                         "type": "integer",
-                        "description": "Byte offset to start reading from (default: 0, for chunking large files)",
+                        "description": "Byte offset to start reading from (default: 0, for chunking large files). Cannot be used with save_local.",
                         "minimum": 0
                     },
                     "limit": {
                         "type": "integer",
-                        "description": "Maximum bytes to return (optional, for chunking large files)",
+                        "description": "Maximum bytes to return (optional, for chunking large files). Cannot be used with save_local.",
                         "minimum": 1
                     },
                     "compress": {
@@ -424,14 +438,16 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
             # Validate file path format
             validate_file_path(file_path)
             
-            # Get optional parameters for chunking and compression
+            # Get optional parameters
+            save_local = arguments.get("save_local", False)
             offset = arguments.get("offset", 0)
             limit = arguments.get("limit")
             compress = arguments.get("compress", False)
             
-            # Call API client with new parameters
+            # Call API client with all parameters (including save_local)
             result = await api_client.read_file(
                 file_path=file_path,
+                save_local=save_local,
                 offset=offset,
                 limit=limit,
                 compress=compress
