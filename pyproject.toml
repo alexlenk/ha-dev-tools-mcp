@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ha-config-manager-mcp"
+version = "1.0.1"
+description = "Home Assistant Configuration Manager MCP Server"
+authors = [{name = "Home Assistant Development Power"}]
+requires-python = ">=3.12"
+dependencies = [
+    "mcp>=1.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0.0",
+    "aiofiles>=23.0.0",
+    "aiohttp>=3.8.0",
+    "cryptography>=41.0.0",
+    "jinja2>=3.0.0"
+]
+
+[project.scripts]
+ha-config-manager = "ha_config_manager.__main__:run"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-homeassistant-custom-component>=0.13.0",
+    "homeassistant>=2026.1.0",
+    "hypothesis>=6.0.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+    "aioresponses>=0.7.0",
+    "freezegun>=1.2.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
