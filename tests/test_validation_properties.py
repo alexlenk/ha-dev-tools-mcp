@@ -267,4 +267,4 @@ def test_required_parameter_validation_accepts_non_none(value):
     try:
         validate_required_parameter(value, "test_param")
     except ValidationError:
-        pytest.fail(f"Non-None value was incorrectly rejected")
+        pytest.fail("Non-None value was incorrectly rejected")

@@ -1,9 +1,8 @@
 """Tests for HAConfigurationManager cleanup functionality."""
 
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 from ha_dev_tools.manager import HAConfigurationManager
-from ha_dev_tools.types import HAInstance, ConnectionType, ConnectionConfig
 
 
 class TestManagerCleanup:

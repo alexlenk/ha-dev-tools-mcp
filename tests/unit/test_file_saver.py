@@ -1,6 +1,5 @@
 """Unit tests for FileSaver class."""
 
-import asyncio
 import tempfile
 from pathlib import Path
 

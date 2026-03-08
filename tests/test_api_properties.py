@@ -4,11 +4,7 @@ These tests validate universal properties using HA APIs instead of filesystem ac
 This aligns with requirements 7.2, 13.1, 13.2.
 """
 
-import tempfile
-from pathlib import Path
-from typing import Any, Dict
 
-import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
 
 from ha_dev_tools.manager import HAConfigurationManager
@@ -175,7 +171,7 @@ class TestAPIConfigurationProperties:
         
         # Property: API-based discovery should work without filesystem access
         try:
-            files = await manager.list_config_files(instance_id)
+            await manager.list_config_files(instance_id)
             # In mock environment, this may fail, which is expected
             # The property is about the API-based approach, not filesystem
         except Exception:
@@ -212,7 +208,7 @@ class TestAPIConfigurationProperties:
         # Test the backup creation logic (independent of connection type)
         try:
             # This tests the backup logic, not the actual API call
-            backup_path = await manager.create_backup(instance_id, "test_file.yaml")
+            await manager.create_backup(instance_id, "test_file.yaml")
             # In mock environment, this may fail, which validates API-only approach
         except Exception:
             # Expected without real HA API - validates we're not using filesystem

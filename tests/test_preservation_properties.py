@@ -14,8 +14,6 @@ EXPECTED OUTCOME: All tests PASS on unfixed code (baseline behavior)
 
 import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
-from unittest.mock import Mock, AsyncMock, patch
-import asyncio
 
 
 # ============================================================================
@@ -57,7 +55,6 @@ class TestLocalFileOperationsPreservation:
         
         # Expected behavior: local tools should be used
         # This is the baseline behavior to preserve
-        expected_tool = "readFile"  # or fileSearch, listDirectory
         
         # The actual implementation would check tool selection logic
         # For now, we verify the context detection is correct
@@ -228,10 +225,6 @@ class TestSmallFileRetrievalPreservation:
         or compression mechanisms.
         """
         # Simulate file metadata
-        file_metadata = {
-            "size": file_size,
-            "path": "test.yaml"
-        }
         
         # Verify file is small
         assert file_size < 10000

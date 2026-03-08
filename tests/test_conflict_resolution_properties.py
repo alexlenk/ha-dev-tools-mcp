@@ -4,16 +4,13 @@ Property-based tests for conflict resolution utilities.
 Tests universal correctness properties for conflict detection and diff generation.
 """
 
-import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
 from datetime import datetime, timedelta
 import hashlib
 
 from ha_dev_tools.conflict_resolution import (
     FileMetadata,
-    ConflictInfo,
     ConflictType,
-    FileDiff,
     detect_conflict,
     generate_diff
 )

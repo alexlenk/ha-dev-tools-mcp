@@ -733,7 +733,7 @@ class TestTemplateValidationProperties:
         
         **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6**
         """
-        from jinja2 import TemplateSyntaxError, UndefinedError
+        from jinja2 import TemplateSyntaxError
         from ha_dev_tools.template_validator import format_template_error, TemplateError
         
         # Generate templates with various types of syntax errors

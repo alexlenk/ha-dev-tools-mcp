@@ -9,8 +9,7 @@ import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
 from ha_dev_tools.template_validator import (
     validate_template_syntax,
-    format_template_error,
-    _extract_template_excerpt
+    format_template_error
 )
 from jinja2 import TemplateSyntaxError
 
@@ -136,7 +135,7 @@ class TestMultilineLineNumberAccuracy:
         # unexpected content or EOF
         assert reported_line >= 1, "Line number should be 1-indexed"
         assert reported_line <= num_lines, (
-            f"Reported line should be within template bounds"
+            "Reported line should be within template bounds"
         )
 
 

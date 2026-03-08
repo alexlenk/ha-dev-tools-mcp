@@ -13,7 +13,7 @@ Requirements: 3.4
 """
 
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 import aiohttp
 
 
@@ -403,7 +403,7 @@ class TestErrorScenarios:
         
         # Attempt second chunk
         try:
-            chunk2 = await mock_ha_api_with_errors.read_config_file("large.yaml", offset=100000)
+            await mock_ha_api_with_errors.read_config_file("large.yaml", offset=100000)
             retrieval_failed = False
         except aiohttp.ClientError:
             retrieval_failed = True

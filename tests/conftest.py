@@ -5,7 +5,6 @@ from interfering with API client tests that use aiohttp.
 """
 
 import pytest
-import sys
 
 
 # Register marker for tests that should skip HA fixtures

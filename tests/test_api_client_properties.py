@@ -4,8 +4,7 @@ These tests validate universal properties of the HTTP API client.
 """
 
 import asyncio
-import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pytest
 from aioresponses import aioresponses
@@ -256,7 +255,7 @@ class TestAPIClientProperties:
             
             # Content should match exactly
             assert result['content'] == content, "File content should be preserved exactly"
-            assert type(result['content']) == type(content), "Content type should be preserved"
+            assert isinstance(result['content'], str), "Content type should be preserved"
             
             # Verify whitespace preservation in content
             if '\n' in content:
@@ -632,7 +631,7 @@ class TestAPIClientProperties:
                 
                 # Property: Rendered output should be returned unchanged
                 assert result == rendered_output, "Rendered output should be preserved exactly"
-                assert type(result) == str, "Output should be a string"
+                assert isinstance(result, str), "Output should be a string"
                 
             except Exception as e:
                 pytest.fail(f"Template response should be passed through unchanged: {e}")

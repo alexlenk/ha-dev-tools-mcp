@@ -3,14 +3,13 @@
 These tests validate universal properties that should hold for logging operations.
 """
 
-import logging
 import pytest
 from hypothesis import given, strategies as st, settings
 from aioresponses import aioresponses
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 import json
 
-from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.connection.api import HAAPIClient
 
 
 # Hypothesis strategies for generating test data

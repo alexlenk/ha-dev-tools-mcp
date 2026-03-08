@@ -1,6 +1,5 @@
 """Unit tests for template_validator module."""
 
-import pytest
 from jinja2 import TemplateSyntaxError, UndefinedError
 
 from ha_dev_tools.template_validator import (

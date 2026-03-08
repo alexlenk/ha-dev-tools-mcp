@@ -11,7 +11,7 @@ Requirements: 2.1, 2.2, 3.1, 3.2
 
 import pytest
 import os
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import patch
 
 
 @pytest.fixture
@@ -101,7 +101,6 @@ class TestPowerIntegrationScenarios:
         assert not context["power_installed"], "Power should not be installed"
         
         # Simulate user request
-        user_request = "Show me my Home Assistant configuration.yaml"
         
         # Context recognition
         should_use_mcp = context["power_installed"] and context["power_configured"]
@@ -132,7 +131,6 @@ class TestPowerIntegrationScenarios:
         assert context["ha_token"] is None
         
         # Simulate user request
-        user_request = "Show me my Home Assistant configuration.yaml"
         
         # Should detect configuration issue
         has_config_issue = (
@@ -185,7 +183,7 @@ class TestPowerIntegrationScenarios:
         Expected: Use local tools for project files
         """
         # Simulate context
-        context = {
+        {
             "power_installed": mock_power_installed["installed"],
             "power_configured": mock_power_installed["configured"]
         }
@@ -254,7 +252,6 @@ class TestPowerIntegrationScenarios:
         ]
         
         # Simulate HA-related request
-        user_request = "Show me my Home Assistant configuration.yaml"
         
         # Should select ha-development-power
         relevant_power = None

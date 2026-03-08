@@ -1,6 +1,5 @@
 """Unit tests for configuration management."""
 
-import os
 import pytest
 from ha_dev_tools.config import ConfigError, ServerConfig, load_config
 

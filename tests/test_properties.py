@@ -5,9 +5,7 @@ These tests validate universal properties that should hold across all valid exec
 
 import tempfile
 from pathlib import Path
-from typing import Any, Dict
 
-import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
 
 from ha_dev_tools.manager import HAConfigurationManager

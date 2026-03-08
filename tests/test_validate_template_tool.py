@@ -7,7 +7,6 @@ Tests the validate_template tool handler in the MCP server, including:
 - Error handling for malformed requests
 """
 
-import json
 import pytest
 from aioresponses import aioresponses
 

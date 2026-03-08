@@ -8,9 +8,7 @@ Tests verify:
 
 import pytest
 import os
-import sys
-import asyncio
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch
 from ha_dev_tools.config import ConfigError
 
 

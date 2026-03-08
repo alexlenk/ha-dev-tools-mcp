@@ -13,7 +13,6 @@ Requirements: 2.5, 2.6, 2.7, 2.8
 import pytest
 import yaml
 from unittest.mock import AsyncMock, Mock
-from datetime import datetime
 
 
 @pytest.fixture
@@ -84,7 +83,6 @@ class TestUploadWorkflow:
         5. Verify upload succeeded
         """
         # Step 1: Simulate user request
-        user_request = "Upload my changes to automations.yaml"
         filename = "automations.yaml"
         
         # Step 2: Validate YAML
@@ -126,7 +124,6 @@ class TestUploadWorkflow:
         """
         Test that YAML validation occurs before upload attempt.
         """
-        filename = "scripts.yaml"
         
         # Attempt to validate invalid YAML
         try:
@@ -153,7 +150,7 @@ class TestUploadWorkflow:
         expected_hash = current_metadata["hash"]
         
         # Upload with expected_hash
-        write_result = await mock_ha_api.write_config_file(
+        await mock_ha_api.write_config_file(
             filename,
             valid_yaml_content,
             expected_hash=expected_hash

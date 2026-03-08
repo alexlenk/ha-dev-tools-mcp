@@ -14,11 +14,8 @@ Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8
 
 import pytest
 import json
-import os
-import tempfile
 import shutil
-from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch, MagicMock
+from unittest.mock import AsyncMock, Mock
 from datetime import datetime
 
 # Mock the MCP server components
@@ -105,7 +102,6 @@ class TestDownloadWorkflow:
         7. Record metadata: Update .ha-workflow/metadata.json
         """
         # Step 1: Simulate user request
-        user_request = "Download my Home Assistant configuration.yaml"
         
         # Step 2: Context recognition
         context = {
@@ -122,14 +118,6 @@ class TestDownloadWorkflow:
         assert not context["explicit_local"], "Should not be explicit local request"
         
         # Step 3: Steering retrieval (simulated)
-        steering_content = """
-        # Download Workflow
-        
-        1. ALWAYS get_file_metadata first
-        2. THEN read_config_file
-        3. THEN save locally to ~/ha-dev-workspace/
-        4. THEN record metadata in .ha-workflow/metadata.json
-        """
         
         # Step 4: get_file_metadata
         metadata = await mock_ha_api.get_file_metadata("configuration.yaml")
@@ -205,7 +193,7 @@ class TestDownloadWorkflow:
         mock_ha_api.read_config_file = tracked_read_file
         
         # Execute workflow
-        metadata = await mock_ha_api.get_file_metadata("automations.yaml")
+        await mock_ha_api.get_file_metadata("automations.yaml")
         file_response = await mock_ha_api.read_config_file("automations.yaml")
         
         call_order.append("save_locally")

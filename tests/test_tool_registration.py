@@ -137,7 +137,7 @@ class TestToolRegistration:
         assert 'template' in render_template.inputSchema['required']
         assert 'validate_entities' not in render_template.inputSchema['required']
         # Verify validate_entities has default value
-        assert render_template.inputSchema['properties']['validate_entities'].get('default') == False
+        assert not render_template.inputSchema['properties']['validate_entities'].get('default')
         
         # validate_template - required template parameter, optional validate_entities
         validate_template = tool_dict['validate_template']
@@ -147,7 +147,7 @@ class TestToolRegistration:
         assert 'template' in validate_template.inputSchema['required']
         assert 'validate_entities' not in validate_template.inputSchema['required']
         # Verify validate_entities has default value
-        assert validate_template.inputSchema['properties']['validate_entities'].get('default') == False
+        assert not validate_template.inputSchema['properties']['validate_entities'].get('default')
     
     @pytest.mark.asyncio
     async def test_system_info_tools_schemas(self):

@@ -13,7 +13,7 @@ Requirements: 2.9, 2.10, 2.11, 2.12, 2.13
 
 import pytest
 import hashlib
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 
 @pytest.fixture

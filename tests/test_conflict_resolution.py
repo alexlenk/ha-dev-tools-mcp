@@ -4,14 +4,10 @@ Unit tests for conflict resolution utilities.
 Tests specific examples and edge cases for conflict detection and diff generation.
 """
 
-import pytest
-from datetime import datetime, timedelta
 
 from ha_dev_tools.conflict_resolution import (
     FileMetadata,
-    ConflictInfo,
     ConflictType,
-    FileDiff,
     detect_conflict,
     generate_diff
 )

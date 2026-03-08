@@ -7,7 +7,6 @@ Validates: Requirements 1.3, 3.1
 
 import json
 
-import pytest
 from hypothesis import given, settings, strategies as st
 
 from ha_dev_tools.types import (
@@ -194,9 +193,9 @@ def test_save_result_serialization_preserves_types(result):
     reconstructed = deserialize_to_type(deserialized_dict, SaveResult)
     
     # Check types are preserved
-    assert type(reconstructed.local_path) == type(result.local_path)
-    assert type(reconstructed.file_size) == type(result.file_size)
-    assert type(reconstructed.remote_path) == type(result.remote_path)
+    assert isinstance(reconstructed.local_path, str) and isinstance(result.local_path, str)
+    assert isinstance(reconstructed.file_size, int) and isinstance(result.file_size, int)
+    assert isinstance(reconstructed.remote_path, str) and isinstance(result.remote_path, str)
 
 
 def test_save_config_default_values():

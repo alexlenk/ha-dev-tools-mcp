@@ -2,7 +2,7 @@
 
 import pytest
 import asyncio
-from aiohttp import ClientError, ClientTimeout
+from aiohttp import ClientError
 from aioresponses import aioresponses
 from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 
