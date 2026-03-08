@@ -147,7 +147,8 @@ class TestConfigurationProperties:
         assert test_file in file_paths, "Discovery should find all configuration files"
         
         # Property: Reading should return complete content with formatting preserved
-        read_content = await manager.read_config_file(instance_id, test_file)
+        read_result = await manager.read_config_file(instance_id, test_file)
+        read_content = read_result['content']
         assert read_content.strip() == content.strip(), "Content should be preserved exactly"
     
     @given(st.text(min_size=1, max_size=50, alphabet=st.characters(whitelist_categories=('Lu', 'Ll', 'Nd', 'Pc'))))
@@ -175,7 +176,8 @@ class TestConfigurationProperties:
         
         # Property: Backup creation should preserve exact original content
         backup_path = await manager.create_backup(instance_id, test_file)
-        backup_content = await manager.read_config_file(instance_id, backup_path)
+        backup_result = await manager.read_config_file(instance_id, backup_path)
+        backup_content = backup_result['content']
         
         assert backup_content == original_content, "Backup should contain exact original content"
         assert backup_path != test_file, "Backup should have different path than original"
