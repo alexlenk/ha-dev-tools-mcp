@@ -16,8 +16,7 @@ from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 def api_client():
     """Create a mock API client for testing."""
     return HAAPIClient(
-        base_url="http://homeassistant.local:8123",
-        access_token="test_token"
+        base_url="http://homeassistant.local:8123", access_token="test_token"
     )
 
 
@@ -34,12 +33,12 @@ async def test_get_file_metadata_valid_file(api_client):
                 "modified_at": "2026-02-12T10:30:00Z",
                 "content_hash": "abc123def456",
                 "exists": True,
-                "accessible": True
-            }
+                "accessible": True,
+            },
         )
-        
+
         metadata = await api_client.get_file_metadata("configuration.yaml")
-        
+
         assert metadata["path"] == "configuration.yaml"
         assert metadata["size"] == 1024
         assert metadata["modified_at"] == "2026-02-12T10:30:00Z"
@@ -57,13 +56,13 @@ async def test_get_file_metadata_invalid_file(api_client):
             status=404,
             payload={
                 "error": "file_not_found",
-                "message": "File not found: nonexistent.yaml"
-            }
+                "message": "File not found: nonexistent.yaml",
+            },
         )
-        
+
         with pytest.raises(HAAPIError) as exc_info:
             await api_client.get_file_metadata("nonexistent.yaml")
-        
+
         assert exc_info.value.status_code == 404
 
 
@@ -81,7 +80,7 @@ async def test_batch_get_metadata_multiple_files(api_client):
                     "modified_at": "2026-02-12T10:30:00Z",
                     "content_hash": "abc123",
                     "exists": True,
-                    "accessible": True
+                    "accessible": True,
                 },
                 {
                     "path": "automations.yaml",
@@ -89,16 +88,15 @@ async def test_batch_get_metadata_multiple_files(api_client):
                     "modified_at": "2026-02-12T11:00:00Z",
                     "content_hash": "def456",
                     "exists": True,
-                    "accessible": True
-                }
-            ]
+                    "accessible": True,
+                },
+            ],
         )
-        
-        metadata_list = await api_client.batch_get_metadata([
-            "configuration.yaml",
-            "automations.yaml"
-        ])
-        
+
+        metadata_list = await api_client.batch_get_metadata(
+            ["configuration.yaml", "automations.yaml"]
+        )
+
         assert len(metadata_list) == 2
         assert metadata_list[0]["path"] == "configuration.yaml"
         assert metadata_list[0]["size"] == 1024
@@ -120,7 +118,7 @@ async def test_batch_get_metadata_with_errors(api_client):
                     "modified_at": "2026-02-12T10:30:00Z",
                     "content_hash": "abc123",
                     "exists": True,
-                    "accessible": True
+                    "accessible": True,
                 },
                 {
                     "path": "nonexistent.yaml",
@@ -129,16 +127,15 @@ async def test_batch_get_metadata_with_errors(api_client):
                     "content_hash": None,
                     "exists": False,
                     "accessible": False,
-                    "error": "File not found"
-                }
-            ]
+                    "error": "File not found",
+                },
+            ],
         )
-        
-        metadata_list = await api_client.batch_get_metadata([
-            "configuration.yaml",
-            "nonexistent.yaml"
-        ])
-        
+
+        metadata_list = await api_client.batch_get_metadata(
+            ["configuration.yaml", "nonexistent.yaml"]
+        )
+
         assert len(metadata_list) == 2
         assert metadata_list[0]["exists"] is True
         assert metadata_list[1]["exists"] is False
@@ -154,13 +151,13 @@ async def test_get_file_metadata_access_denied(api_client):
             status=403,
             payload={
                 "error": "access_denied",
-                "message": "Access denied to file: secrets.yaml"
-            }
+                "message": "Access denied to file: secrets.yaml",
+            },
         )
-        
+
         with pytest.raises(HAAPIError) as exc_info:
             await api_client.get_file_metadata("secrets.yaml")
-        
+
         assert exc_info.value.status_code == 403
 
 
@@ -171,9 +168,9 @@ async def test_batch_get_metadata_empty_list(api_client):
         mock.post(
             "http://homeassistant.local:8123/api/management/metadata/batch",
             status=200,
-            payload=[]
+            payload=[],
         )
-        
+
         metadata_list = await api_client.batch_get_metadata([])
-        
+
         assert len(metadata_list) == 0

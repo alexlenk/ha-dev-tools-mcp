@@ -14,6 +14,7 @@ from typing import List, Optional
 
 class ConflictType(Enum):
     """Types of version conflicts."""
+
     REMOTE_NEWER = "remote_newer"
     BOTH_MODIFIED = "both_modified"
     LOCAL_DELETED = "local_deleted"
@@ -23,6 +24,7 @@ class ConflictType(Enum):
 @dataclass
 class FileMetadata:
     """Metadata for a file version."""
+
     path: str
     content_hash: str
     modified_at: str  # ISO 8601 timestamp
@@ -32,6 +34,7 @@ class FileMetadata:
 @dataclass
 class ConflictInfo:
     """Information about a detected version conflict."""
+
     file_path: str
     local_hash: str
     local_modified: str
@@ -47,6 +50,7 @@ class ConflictInfo:
 @dataclass
 class FileDiff:
     """Diff information between two file versions."""
+
     file_path: str
     local_content: str
     remote_content: str
@@ -59,8 +63,7 @@ class FileDiff:
 
 
 def detect_conflict(
-    local_metadata: FileMetadata,
-    remote_metadata: FileMetadata
+    local_metadata: FileMetadata, remote_metadata: FileMetadata
 ) -> ConflictInfo:
     """
     Detect version conflicts between local and remote file metadata.
@@ -84,8 +87,12 @@ def detect_conflict(
     else:
         # Hashes differ - determine conflict type
         try:
-            local_time = datetime.fromisoformat(local_metadata.modified_at.replace('Z', '+00:00'))
-            remote_time = datetime.fromisoformat(remote_metadata.modified_at.replace('Z', '+00:00'))
+            local_time = datetime.fromisoformat(
+                local_metadata.modified_at.replace("Z", "+00:00")
+            )
+            remote_time = datetime.fromisoformat(
+                remote_metadata.modified_at.replace("Z", "+00:00")
+            )
 
             if remote_time > local_time:
                 # Remote is newer
@@ -103,14 +110,12 @@ def detect_conflict(
         local_modified=local_metadata.modified_at,
         remote_hash=remote_metadata.content_hash,
         remote_modified=remote_metadata.modified_at,
-        conflict_type=conflict_type
+        conflict_type=conflict_type,
     )
 
 
 def generate_diff(
-    local_content: str,
-    remote_content: str,
-    file_path: str = "file"
+    local_content: str, remote_content: str, file_path: str = "file"
 ) -> FileDiff:
     """
     Generate a unified diff between local and remote file content.
@@ -131,13 +136,15 @@ def generate_diff(
     remote_lines = remote_content.splitlines(keepends=True)
 
     # Generate unified diff
-    diff_lines = list(difflib.unified_diff(
-        local_lines,
-        remote_lines,
-        fromfile=f"local/{file_path}",
-        tofile=f"remote/{file_path}",
-        lineterm=""
-    ))
+    diff_lines = list(
+        difflib.unified_diff(
+            local_lines,
+            remote_lines,
+            fromfile=f"local/{file_path}",
+            tofile=f"remote/{file_path}",
+            lineterm="",
+        )
+    )
 
     # Join diff lines into a single string
     unified_diff = "".join(diff_lines)
@@ -145,9 +152,9 @@ def generate_diff(
     # Identify conflict lines (lines that differ)
     conflict_lines = []
     for i, line in enumerate(diff_lines):
-        if line.startswith('+') or line.startswith('-'):
+        if line.startswith("+") or line.startswith("-"):
             # Skip the file headers
-            if not line.startswith('+++') and not line.startswith('---'):
+            if not line.startswith("+++") and not line.startswith("---"):
                 conflict_lines.append(i)
 
     return FileDiff(
@@ -155,5 +162,5 @@ def generate_diff(
         local_content=local_content,
         remote_content=remote_content,
         unified_diff=unified_diff,
-        conflict_lines=conflict_lines
+        conflict_lines=conflict_lines,
     )

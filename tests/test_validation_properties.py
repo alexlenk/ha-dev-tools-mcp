@@ -15,14 +15,14 @@ from ha_dev_tools.validation import (
     validate_entity_id,
     validate_domain,
     validate_service,
-    validate_required_parameter
+    validate_required_parameter,
 )
-
 
 # Property 10: Path Validation
 # For any file_path parameter containing path traversal sequences (like "../")
 # or absolute paths, the validation should reject it with an error.
 # Validates: Requirements 9.2
+
 
 @given(st.text())
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -51,8 +51,9 @@ def test_path_validation_rejects_absolute_paths(path):
 def test_path_validation_rejects_windows_absolute_paths(path):
     """Property: Windows-style absolute paths (C:, etc.) should be rejected."""
     import re
+
     # Only test Windows paths that don't have other validation issues
-    if re.match(r'^[a-zA-Z]:', path) and "\x00" not in path and ".." not in path:
+    if re.match(r"^[a-zA-Z]:", path) and "\x00" not in path and ".." not in path:
         with pytest.raises(ValidationError) as exc_info:
             validate_file_path(path)
         assert "absolute path" in exc_info.value.message.lower()
@@ -79,7 +80,11 @@ def test_path_validation_accepts_safe_paths(path):
         ".." not in path
         and not path.startswith("/")
         and "\x00" not in path
-        and not path.startswith(tuple(f"{c}:" for c in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+        and not path.startswith(
+            tuple(
+                f"{c}:" for c in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            )
+        )
     ):
         # Should not raise an exception
         try:
@@ -103,6 +108,7 @@ def test_path_validation_empty_path_rejected(path):
 # For any numeric parameter (lines, offset, limit) in tool calls, if the value
 # is not a positive integer, the validation should reject it with an error.
 # Validates: Requirements 9.4
+
 
 @given(st.integers())
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -133,7 +139,9 @@ def test_numeric_validation_respects_max_value(value):
     max_val = 1000
     if value > max_val:
         with pytest.raises(ValidationError) as exc_info:
-            validate_positive_integer(value, "test_param", min_value=1, max_value=max_val)
+            validate_positive_integer(
+                value, "test_param", min_value=1, max_value=max_val
+            )
         assert f"at most {max_val}" in exc_info.value.message.lower()
         assert exc_info.value.parameter == "test_param"
 
@@ -161,6 +169,7 @@ def test_numeric_validation_rejects_non_integers(value):
 
 
 # Additional validation property tests
+
 
 @given(st.text())
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -259,7 +268,11 @@ def test_required_parameter_validation_rejects_none():
     assert exc_info.value.parameter == "test_param"
 
 
-@given(st.one_of(st.text(), st.integers(), st.floats(), st.booleans(), st.lists(st.integers())))
+@given(
+    st.one_of(
+        st.text(), st.integers(), st.floats(), st.booleans(), st.lists(st.integers())
+    )
+)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_required_parameter_validation_accepts_non_none(value):
     """Property: Non-None values for required parameters should be accepted."""

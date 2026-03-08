@@ -15,15 +15,15 @@ from ha_dev_tools.types import (
     SaveErrorCode,
 )
 
-
 # Hypothesis strategies for generating test data
+
 
 @st.composite
 def save_result_strategy(draw):
     """Generate random SaveResult instances."""
     return SaveResult(
         local_path=draw(st.text(min_size=1, max_size=100)),
-        file_size=draw(st.integers(min_value=0, max_value=1024*1024*100)),
+        file_size=draw(st.integers(min_value=0, max_value=1024 * 1024 * 100)),
         remote_path=draw(st.text(min_size=1, max_size=100)),
     )
 
@@ -31,18 +31,21 @@ def save_result_strategy(draw):
 @st.composite
 def save_config_strategy(draw):
     """Generate random SaveConfig instances."""
-    max_size = draw(st.integers(min_value=1024*1024, max_value=100*1024*1024))
+    max_size = draw(st.integers(min_value=1024 * 1024, max_value=100 * 1024 * 1024))
     return SaveConfig(
         max_file_size=max_size,
-        max_file_size_limit=draw(st.integers(min_value=max_size, max_value=100*1024*1024)),
+        max_file_size_limit=draw(
+            st.integers(min_value=max_size, max_value=100 * 1024 * 1024)
+        ),
     )
 
 
 # Helper functions for serialization
 
+
 def serialize_dataclass(obj):
     """Convert dataclass to JSON-serializable dict."""
-    if hasattr(obj, '__dataclass_fields__'):
+    if hasattr(obj, "__dataclass_fields__"):
         result = {}
         for field_name in obj.__dataclass_fields__:
             value = getattr(obj, field_name)
@@ -53,36 +56,37 @@ def serialize_dataclass(obj):
 
 def deserialize_to_type(data, cls):
     """Deserialize dict back to dataclass type."""
-    if not hasattr(cls, '__dataclass_fields__'):
+    if not hasattr(cls, "__dataclass_fields__"):
         return data
-    
+
     kwargs = {}
     for field_name in cls.__dataclass_fields__:
         if field_name in data:
             kwargs[field_name] = data[field_name]
-    
+
     return cls(**kwargs)
 
 
 # Property tests
+
 
 @given(result=save_result_strategy())
 @settings(max_examples=100)
 def test_save_result_json_roundtrip(result):
     """
     Property: SaveResult round-trips through JSON serialization.
-    
+
     For any SaveResult, serializing to JSON and deserializing back
     should produce an equivalent object.
     """
     # Serialize to JSON
     serialized = serialize_dataclass(result)
     json_str = json.dumps(serialized)
-    
+
     # Deserialize back
     deserialized_dict = json.loads(json_str)
     reconstructed = deserialize_to_type(deserialized_dict, SaveResult)
-    
+
     # Verify all fields match
     assert reconstructed.local_path == result.local_path
     assert reconstructed.file_size == result.file_size
@@ -94,18 +98,18 @@ def test_save_result_json_roundtrip(result):
 def test_save_config_json_roundtrip(config):
     """
     Property: SaveConfig round-trips through JSON serialization.
-    
+
     For any SaveConfig, serializing to JSON and deserializing back
     should produce an equivalent object.
     """
     # Serialize to JSON
     serialized = serialize_dataclass(config)
     json_str = json.dumps(serialized)
-    
+
     # Deserialize back
     deserialized_dict = json.loads(json_str)
     reconstructed = deserialize_to_type(deserialized_dict, SaveConfig)
-    
+
     # Verify all fields match
     assert reconstructed.max_file_size == config.max_file_size
     assert reconstructed.max_file_size_limit == config.max_file_size_limit
@@ -116,18 +120,18 @@ def test_save_config_json_roundtrip(config):
 def test_save_result_has_required_fields(result):
     """
     Property: SaveResult has all required fields.
-    
+
     For any SaveResult, it should have local_path, file_size, and remote_path.
     """
-    assert hasattr(result, 'local_path')
-    assert hasattr(result, 'file_size')
-    assert hasattr(result, 'remote_path')
-    
+    assert hasattr(result, "local_path")
+    assert hasattr(result, "file_size")
+    assert hasattr(result, "remote_path")
+
     # Fields should have correct types
     assert isinstance(result.local_path, str)
     assert isinstance(result.file_size, int)
     assert isinstance(result.remote_path, str)
-    
+
     # File size should be non-negative
     assert result.file_size >= 0
 
@@ -137,18 +141,18 @@ def test_save_result_has_required_fields(result):
 def test_save_config_has_valid_limits(config):
     """
     Property: SaveConfig has valid size limits.
-    
+
     For any SaveConfig, max_file_size should not exceed max_file_size_limit.
     """
-    assert hasattr(config, 'max_file_size')
-    assert hasattr(config, 'max_file_size_limit')
-    
+    assert hasattr(config, "max_file_size")
+    assert hasattr(config, "max_file_size_limit")
+
     # Both should be positive integers
     assert isinstance(config.max_file_size, int)
     assert isinstance(config.max_file_size_limit, int)
     assert config.max_file_size > 0
     assert config.max_file_size_limit > 0
-    
+
     # max_file_size should not exceed limit
     assert config.max_file_size <= config.max_file_size_limit
 
@@ -156,7 +160,7 @@ def test_save_config_has_valid_limits(config):
 def test_save_error_codes_exist():
     """
     Property: All required error codes exist.
-    
+
     SaveErrorCode should have all the error codes specified in the design.
     """
     required_codes = [
@@ -168,10 +172,10 @@ def test_save_error_codes_exist():
         "PERMISSION_DENIED",
         "WRITE_FAILED",
     ]
-    
+
     for code in required_codes:
         assert hasattr(SaveErrorCode, code), f"Missing error code: {code}"
-        
+
         # Verify it's a valid enum value
         error_code = getattr(SaveErrorCode, code)
         assert isinstance(error_code, SaveErrorCode)
@@ -182,7 +186,7 @@ def test_save_error_codes_exist():
 def test_save_result_serialization_preserves_types(result):
     """
     Property: SaveResult serialization preserves field types.
-    
+
     For any SaveResult, after JSON round-trip, all fields should maintain
     their original types.
     """
@@ -191,27 +195,33 @@ def test_save_result_serialization_preserves_types(result):
     json_str = json.dumps(serialized)
     deserialized_dict = json.loads(json_str)
     reconstructed = deserialize_to_type(deserialized_dict, SaveResult)
-    
+
     # Check types are preserved
-    assert isinstance(reconstructed.local_path, str) and isinstance(result.local_path, str)
-    assert isinstance(reconstructed.file_size, int) and isinstance(result.file_size, int)
-    assert isinstance(reconstructed.remote_path, str) and isinstance(result.remote_path, str)
+    assert isinstance(reconstructed.local_path, str) and isinstance(
+        result.local_path, str
+    )
+    assert isinstance(reconstructed.file_size, int) and isinstance(
+        result.file_size, int
+    )
+    assert isinstance(reconstructed.remote_path, str) and isinstance(
+        result.remote_path, str
+    )
 
 
 def test_save_config_default_values():
     """
     Property: SaveConfig can be created with default values.
-    
+
     SaveConfig should have sensible defaults for max_file_size.
     """
     # Create with defaults
     default_config = SaveConfig()
-    
+
     # Should have default max_file_size (10MB)
     assert default_config.max_file_size == 10 * 1024 * 1024
-    
+
     # Should have default max_file_size_limit (100MB)
     assert default_config.max_file_size_limit == 100 * 1024 * 1024
-    
+
     # Defaults should be valid
     assert default_config.max_file_size <= default_config.max_file_size_limit

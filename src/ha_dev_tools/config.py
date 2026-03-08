@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 class ConfigError(Exception):
     """Exception raised for configuration errors."""
+
     pass
 
 
@@ -19,6 +20,7 @@ class ServerConfig:
         request_timeout: Timeout in seconds for HTTP requests (default: 30)
         max_file_size: Maximum file size in bytes for file save operations (default: 10MB)
     """
+
     ha_url: str
     ha_token: str
     request_timeout: int = 30
@@ -67,9 +69,7 @@ def load_config() -> ServerConfig:
 
     # Validate URL format
     if not ha_url.startswith(("http://", "https://")):
-        raise ConfigError(
-            f"HA_URL must start with http:// or https://. Got: {ha_url}"
-        )
+        raise ConfigError(f"HA_URL must start with http:// or https://. Got: {ha_url}")
 
     # Parse and validate max_file_size
     max_file_size = 10 * 1024 * 1024  # 10MB default
