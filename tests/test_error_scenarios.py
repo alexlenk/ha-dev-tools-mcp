@@ -17,7 +17,7 @@ class TestSpecificErrorScenarios:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files/missing.yaml",
+                "http://ha.local:8123/api/management/files/missing.yaml",
                 status=404,
                 body='{"message": "File not found"}'
             )
@@ -59,7 +59,7 @@ class TestSpecificErrorScenarios:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files",
+                "http://ha.local:8123/api/management/files",
                 status=401,
                 body='{"message": "Unauthorized"}'
             )
@@ -81,7 +81,7 @@ class TestSpecificErrorScenarios:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files/secrets.yaml",
+                "http://ha.local:8123/api/management/files/secrets.yaml",
                 status=403,
                 body='{"message": "Forbidden"}'
             )
@@ -104,7 +104,7 @@ class TestSpecificErrorScenarios:
         with aioresponses() as m:
             # Use the correct URL format with query parameters
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/logs/invalid_source?lines=100&offset=0&limit=100",
+                "http://ha.local:8123/api/management/logs/invalid_source?lines=100&offset=0&limit=100",
                 status=400,
                 body='{"message": "Invalid log source. Supported: core"}'
             )
@@ -125,7 +125,7 @@ class TestSpecificErrorScenarios:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files",
+                "http://ha.local:8123/api/management/files",
                 status=500,
                 body='{"message": "Internal server error"}'
             )
@@ -147,7 +147,7 @@ class TestSpecificErrorScenarios:
         with aioresponses() as m:
             # Simulate timeout by raising asyncio.TimeoutError
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files",
+                "http://ha.local:8123/api/management/files",
                 exception=asyncio.TimeoutError("Connection timeout")
             )
             
@@ -168,7 +168,7 @@ class TestSpecificErrorScenarios:
         with aioresponses() as m:
             # Simulate connection error
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files",
+                "http://ha.local:8123/api/management/files",
                 exception=ClientError("Connection refused")
             )
             

@@ -15,7 +15,7 @@ class TestListFilesMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files",
+                "http://ha.local:8123/api/management/files",
                 payload={
                     'files': [
                         {'path': 'configuration.yaml', 'type': 'configuration'},
@@ -40,7 +40,7 @@ class TestListFilesMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files?directory=packages",
+                "http://ha.local:8123/api/management/files?directory=packages",
                 payload={
                     'files': [
                         {'path': 'packages/lights.yaml', 'type': 'package'}
@@ -71,7 +71,7 @@ class TestReadFileMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files/configuration.yaml",
+                "http://ha.local:8123/api/management/files/configuration.yaml",
                 body=file_content
             )
             
@@ -90,7 +90,7 @@ class TestReadFileMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/files/nonexistent.yaml",
+                "http://ha.local:8123/api/management/files/nonexistent.yaml",
                 status=404,
                 body='{"message": "File not found"}'
             )
@@ -115,7 +115,7 @@ class TestGetLogsMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=100&offset=0&limit=100",
+                "http://ha.local:8123/api/management/logs/core?lines=100&offset=0&limit=100",
                 payload={
                     'logs': [
                         {
@@ -144,7 +144,7 @@ class TestGetLogsMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=50&offset=0&limit=25&level=ERROR&search=connection",
+                "http://ha.local:8123/api/management/logs/core?lines=50&offset=0&limit=25&level=ERROR&search=connection",
                 payload={'logs': []}
             )
             

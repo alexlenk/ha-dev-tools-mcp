@@ -53,7 +53,7 @@ export HA_URL="http://homeassistant.local:8123"
 export HA_TOKEN="your_token_here"
 
 # Start the inspector
-mcp-inspector python -m ha_config_manager.server
+mcp-inspector python -m ha_dev_tools.server
 ```
 
 This will:
@@ -79,7 +79,7 @@ Create a simple Python script to test specific functionality:
 # test_mcp_server.py
 import asyncio
 import os
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 async def test_connection():
     """Test basic connection to Home Assistant."""
@@ -139,9 +139,9 @@ Edit your MCP configuration file (`~/.kiro/settings/mcp.json`):
 ```json
 {
   "mcpServers": {
-    "ha-config-manager": {
+    "ha-dev-tools": {
       "command": "python",
-      "args": ["-m", "ha_config_manager.server"],
+      "args": ["-m", "ha_dev_tools.server"],
       "env": {
         "HA_URL": "http://homeassistant.local:8123",
         "HA_TOKEN": "your_long_lived_access_token_here",
@@ -174,7 +174,7 @@ export HA_URL="http://homeassistant.local:8123"
 export HA_TOKEN="your_token_here"
 
 # Start the server (it reads from stdin and writes to stdout)
-PYTHONPATH=src/config-manager/src python -m ha_config_manager.server
+PYTHONPATH=src python -m ha_dev_tools.server
 ```
 
 Then send JSON-RPC messages via stdin:
@@ -191,14 +191,14 @@ Then send JSON-RPC messages via stdin:
 ```bash
 export HA_URL="http://homeassistant.local:8123"
 export HA_TOKEN="test_token"
-PYTHONPATH=src/config-manager/src python -c "from ha_config_manager.server import main; print('Server imports successfully')"
+PYTHONPATH=src python -c "from ha_dev_tools.server import main; print('Server imports successfully')"
 ```
 
 ### Test 2: Verify Configuration Loading
 ```bash
 # Should fail with clear error
 unset HA_URL
-PYTHONPATH=src/config-manager/src python -m ha_config_manager.server
+PYTHONPATH=src python -m ha_dev_tools.server
 # Expected: "HA_URL environment variable is required"
 
 # Should succeed
@@ -246,7 +246,7 @@ echo $HA_TOKEN
 
 **Check Python path**:
 ```bash
-PYTHONPATH=src/config-manager/src python -c "import ha_config_manager; print('OK')"
+PYTHONPATH=src python -c "import ha_dev_tools; print('OK')"
 ```
 
 ### Connection Errors
@@ -258,14 +258,14 @@ curl -H "Authorization: Bearer $HA_TOKEN" $HA_URL/api/
 
 **Check integration is installed**:
 ```bash
-curl -H "Authorization: Bearer $HA_TOKEN" $HA_URL/api/ha_config_manager/files
+curl -H "Authorization: Bearer $HA_TOKEN" $HA_URL/api/ha_dev_tools/files
 ```
 
 ### MCP Inspector Issues
 
 **Check server is running**:
 ```bash
-ps aux | grep ha_config_manager
+ps aux | grep ha_dev_tools
 ```
 
 **Check logs**:
@@ -284,14 +284,14 @@ The server logs to stderr, so you can see errors in the inspector terminal.
 
 ```bash
 # 1. Run automated tests
-PYTHONPATH=src/config-manager/src .venv/bin/python -m pytest src/config-manager/tests/ -v
+PYTHONPATH=src .venv/bin/python -m pytest tests/ -v
 
 # 2. Set up environment
 export HA_URL="http://homeassistant.local:8123"
 export HA_TOKEN="your_token_here"
 
 # 3. Test with MCP Inspector
-mcp-inspector python -m ha_config_manager.server
+mcp-inspector python -m ha_dev_tools.server
 
 # 4. Configure in Kiro and test end-to-end
 # Edit ~/.kiro/settings/mcp.json and restart Kiro
@@ -367,7 +367,7 @@ Integration tests verify:
 Check template syntax without executing it:
 
 ```python
-from ha_config_manager.template_validator import validate_template_syntax
+from ha_dev_tools.template_validator import validate_template_syntax
 
 template = "{{ states('sensor.temperature') }}"
 is_valid, error = validate_template_syntax(template)
@@ -385,8 +385,8 @@ else:
 Check that entity references exist:
 
 ```python
-from ha_config_manager.template_validator import extract_entity_references
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.template_validator import extract_entity_references
+from ha_dev_tools.connection.api import HAAPIClient
 
 template = "{{ states('sensor.temperature') }}"
 
@@ -407,7 +407,7 @@ if missing:
 Full workflow with all validation steps:
 
 ```python
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 template = "{{ states('sensor.temperature') | float | round(1) }}"
 
@@ -429,7 +429,7 @@ else:
 Detect and report template errors with context:
 
 ```python
-from ha_config_manager.template_validator import validate_template_syntax
+from ha_dev_tools.template_validator import validate_template_syntax
 
 template = """
 {{ states('sensor.temp1') }}
@@ -457,7 +457,7 @@ Test template tools interactively:
 ```bash
 export HA_URL="http://homeassistant.local:8123"
 export HA_TOKEN="your_token_here"
-mcp-inspector python -m ha_config_manager.server
+mcp-inspector python -m ha_dev_tools.server
 ```
 
 In the inspector:
@@ -514,7 +514,7 @@ Property tests verify:
 ```python
 # test_valid_template.py
 import asyncio
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 async def test_valid_template():
     client = HAAPIClient("http://homeassistant.local:8123", "your_token")
@@ -532,7 +532,7 @@ asyncio.run(test_valid_template())
 
 ```python
 # test_syntax_error.py
-from ha_config_manager.template_validator import validate_template_syntax
+from ha_dev_tools.template_validator import validate_template_syntax
 
 template = "{{ states('sensor.temp') | unknown_filter }}"
 is_valid, error = validate_template_syntax(template)
@@ -548,8 +548,8 @@ if not is_valid:
 ```python
 # test_missing_entities.py
 import asyncio
-from ha_config_manager.connection.api import HAAPIClient
-from ha_config_manager.template_validator import extract_entity_references
+from ha_dev_tools.connection.api import HAAPIClient
+from ha_dev_tools.template_validator import extract_entity_references
 
 async def test_missing_entities():
     client = HAAPIClient("http://homeassistant.local:8123", "your_token")

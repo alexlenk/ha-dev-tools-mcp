@@ -74,19 +74,19 @@ class TestLoggingProperties:
                 # Mock appropriate endpoint for each tool
                 if tool_name == "list_config_files":
                     mock.get(
-                        "http://test.local:8123/api/ha_dev_tools/files",
+                        "http://test.local:8123/api/management/files",
                         status=200,
                         payload={"files": []}
                     )
                 elif tool_name == "read_config_file":
                     mock.get(
-                        "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
+                        "http://test.local:8123/api/management/files/test.yaml",
                         status=200,
                         body="test content"
                     )
                 elif tool_name == "get_logs":
                     mock.get(
-                        "http://test.local:8123/api/ha_dev_tools/logs/core",
+                        "http://test.local:8123/api/management/logs/core",
                         status=200,
                         payload={"logs": []}
                     )
@@ -203,7 +203,7 @@ class TestLoggingProperties:
             with aioresponses() as mock:
                 # Mock error response
                 mock.get(
-                    "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
+                    "http://test.local:8123/api/management/files/test.yaml",
                     status=status_code,
                     body=json.dumps({"message": "Test error"})
                 )
@@ -256,14 +256,14 @@ class TestLoggingProperties:
                 if is_success:
                     # Mock successful response
                     mock.get(
-                        "http://test.local:8123/api/ha_dev_tools/files",
+                        "http://test.local:8123/api/management/files",
                         status=200,
                         payload={"files": []}
                     )
                 else:
                     # Mock error response
                     mock.get(
-                        "http://test.local:8123/api/ha_dev_tools/files",
+                        "http://test.local:8123/api/management/files",
                         status=500,
                         body=json.dumps({"message": "Server error"})
                     )
@@ -311,14 +311,14 @@ class TestLoggingProperties:
             with aioresponses() as mock:
                 # Mock successful response
                 mock.get(
-                    "http://test.local:8123/api/ha_dev_tools/files",
+                    "http://test.local:8123/api/management/files",
                     status=200,
                     payload={"files": []}
                 )
                 
                 # Also mock error response for comprehensive testing
                 mock.get(
-                    "http://test.local:8123/api/ha_dev_tools/files/error.yaml",
+                    "http://test.local:8123/api/management/files/error.yaml",
                     status=401,
                     body=json.dumps({"message": "Unauthorized"})
                 )

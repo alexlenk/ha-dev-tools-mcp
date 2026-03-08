@@ -70,7 +70,7 @@ class TestToolExecutionProperties:
         with aioresponses() as mock:
             # Mock successful API response
             mock.get(
-                "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
+                "http://test.local:8123/api/management/files/test.yaml",
                 status=200,
                 body=content
             )
@@ -102,7 +102,7 @@ class TestToolExecutionProperties:
         with aioresponses() as mock:
             # Mock error response
             mock.get(
-                "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
+                "http://test.local:8123/api/management/files/test.yaml",
                 status=status_code,
                 body=json.dumps({"message": "Test error"})
             )
@@ -136,7 +136,7 @@ class TestToolExecutionProperties:
         with aioresponses() as mock:
             # Mock successful JSON response
             mock.get(
-                "http://test.local:8123/api/ha_dev_tools/files",
+                "http://test.local:8123/api/management/files",
                 status=200,
                 payload=response_data
             )
@@ -166,7 +166,7 @@ class TestToolExecutionProperties:
         with aioresponses() as mock:
             # Mock file content response
             mock.get(
-                "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
+                "http://test.local:8123/api/management/files/test.yaml",
                 status=200,
                 body=content
             )
