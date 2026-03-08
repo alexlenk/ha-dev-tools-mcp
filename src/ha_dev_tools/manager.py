@@ -19,12 +19,15 @@ from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 
 from .connection import LocalHAConnection, HAAPIConnection
+from .file_saver import FileSaver
+from .path_validator import SecurityError
 from .types import (
     ConfigFile,
     ConfigFileType,
     ConfigError,
     HAConnection,
     HAInstance,
+    SaveResult,
     ValidationError,
     ValidationResult,
     ValidationSeverity,
@@ -41,6 +44,7 @@ class HAConfigurationManager:
         self._connections: Dict[str, HAConnection] = {}
         self._instances: Dict[str, HAInstance] = {}
         self._current_instance_id: Optional[str] = None
+        self.file_saver = FileSaver()
     
     async def add_instance(self, instance: HAInstance) -> None:
         """Add HA instance to manager."""
@@ -120,13 +124,96 @@ class HAConfigurationManager:
                 instance_id
             )
     
-    async def read_config_file(self, instance_id: str, file_path: str) -> str:
-        """Read configuration file content."""
+    async def read_config_file(
+        self,
+        instance_id: str,
+        file_path: str,
+        save_local: bool = False,
+        offset: Optional[int] = None,
+        length: Optional[int] = None
+    ) -> Dict[str, any]:
+        """Read configuration file content.
+        
+        Args:
+            instance_id: Home Assistant instance identifier
+            file_path: Path to configuration file
+            save_local: Save file to local temp directory instead of returning content
+            offset: Starting byte offset for partial read (mutually exclusive with save_local)
+            length: Number of bytes to read (mutually exclusive with save_local)
+            
+        Returns:
+            Dict with either:
+            - saved=True, local_path, file_size, remote_path (when save_local=True)
+            - saved=False, content, file_size, file_path (when save_local=False)
+            
+        Raises:
+            ValueError: If save_local and pagination parameters are both provided
+            ConfigError: If file read fails
+        """
+        # Validate mutually exclusive parameters
+        if save_local and (offset is not None or length is not None):
+            raise ValueError(
+                "save_local and pagination (offset/length) are mutually exclusive. "
+                "Use save_local for large files (>50KB), pagination for viewing specific sections."
+            )
+        
         connection = self._get_connection(instance_id)
         
         try:
-            return await connection.read_file(file_path)
+            content = await connection.read_file(file_path)
+            
+            # Save locally if requested
+            if save_local:
+                try:
+                    result = await self.file_saver.save_file(file_path, content)
+                    return {
+                        "saved": True,
+                        "local_path": result.local_path,
+                        "file_size": result.file_size,
+                        "remote_path": result.remote_path
+                    }
+                except SecurityError as e:
+                    raise ConfigError(
+                        f"Security error saving file {file_path}: {e}",
+                        "SECURITY_ERROR",
+                        instance_id,
+                        file_path
+                    )
+                except IOError as e:
+                    raise ConfigError(
+                        f"Failed to save file {file_path}: {e}",
+                        "FILE_SAVE_FAILED",
+                        instance_id,
+                        file_path
+                    )
+            
+            # Handle pagination if requested
+            if offset is not None or length is not None:
+                content_bytes = content.encode('utf-8')
+                start = offset if offset is not None else 0
+                end = start + length if length is not None else len(content_bytes)
+                
+                # Slice bytes and handle potential UTF-8 boundary issues
+                sliced_bytes = content_bytes[start:end]
+                
+                # Try to decode, handling incomplete multi-byte sequences
+                try:
+                    content = sliced_bytes.decode('utf-8')
+                except UnicodeDecodeError:
+                    # If we hit a multi-byte boundary, decode with error handling
+                    content = sliced_bytes.decode('utf-8', errors='ignore')
+            
+            # Return content directly
+            return {
+                "saved": False,
+                "content": content,
+                "file_size": len(content.encode('utf-8')),
+                "file_path": file_path
+            }
+            
         except Exception as e:
+            if isinstance(e, (ConfigError, ValueError)):
+                raise
             raise ConfigError(
                 f"Failed to read configuration file {file_path}: {e}",
                 "CONFIG_READ_FAILED",
