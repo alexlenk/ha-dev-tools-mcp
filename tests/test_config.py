@@ -129,3 +129,104 @@ class TestLoadConfig:
         config = load_config()
         
         assert config.ha_url == "http://192.168.1.100:8123"
+
+
+class TestMaxFileSizeConfig:
+    """Tests for max_file_size configuration."""
+    
+    def test_default_max_file_size(self, monkeypatch):
+        """Test that default max_file_size is 10MB."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.delenv("MAX_FILE_SIZE", raising=False)
+        
+        config = load_config()
+        
+        assert config.max_file_size == 10 * 1024 * 1024  # 10MB
+    
+    def test_custom_max_file_size(self, monkeypatch):
+        """Test that custom max_file_size is respected."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("MAX_FILE_SIZE", str(20 * 1024 * 1024))  # 20MB
+        
+        config = load_config()
+        
+        assert config.max_file_size == 20 * 1024 * 1024
+    
+    def test_max_file_size_minimum_valid(self, monkeypatch):
+        """Test that 1MB is accepted as minimum."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("MAX_FILE_SIZE", str(1 * 1024 * 1024))  # 1MB
+        
+        config = load_config()
+        
+        assert config.max_file_size == 1 * 1024 * 1024
+    
+    def test_max_file_size_maximum_valid(self, monkeypatch):
+        """Test that 100MB is accepted as maximum."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("MAX_FILE_SIZE", str(100 * 1024 * 1024))  # 100MB
+        
+        config = load_config()
+        
+        assert config.max_file_size == 100 * 1024 * 1024
+    
+    def test_max_file_size_below_minimum(self, monkeypatch):
+        """Test that values below 1MB are rejected."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("MAX_FILE_SIZE", str(512 * 1024))  # 512KB
+        
+        with pytest.raises(ConfigError) as exc_info:
+            load_config()
+        
+        assert "MAX_FILE_SIZE must be at least" in str(exc_info.value)
+        assert "1MB" in str(exc_info.value)
+    
+    def test_max_file_size_above_maximum(self, monkeypatch):
+        """Test that values above 100MB are rejected."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("MAX_FILE_SIZE", str(150 * 1024 * 1024))  # 150MB
+        
+        with pytest.raises(ConfigError) as exc_info:
+            load_config()
+        
+        assert "MAX_FILE_SIZE must not exceed" in str(exc_info.value)
+        assert "100MB" in str(exc_info.value)
+    
+    def test_max_file_size_invalid_format(self, monkeypatch):
+        """Test that non-integer values are rejected."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("MAX_FILE_SIZE", "not_a_number")
+        
+        with pytest.raises(ConfigError) as exc_info:
+            load_config()
+        
+        assert "MAX_FILE_SIZE must be a valid integer" in str(exc_info.value)
+    
+    def test_max_file_size_zero(self, monkeypatch):
+        """Test that zero is rejected."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("MAX_FILE_SIZE", "0")
+        
+        with pytest.raises(ConfigError) as exc_info:
+            load_config()
+        
+        assert "MAX_FILE_SIZE must be at least" in str(exc_info.value)
+    
+    def test_max_file_size_negative(self, monkeypatch):
+        """Test that negative values are rejected."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("MAX_FILE_SIZE", "-1048576")
+        
+        with pytest.raises(ConfigError) as exc_info:
+            load_config()
+        
+        assert "MAX_FILE_SIZE must be at least" in str(exc_info.value)

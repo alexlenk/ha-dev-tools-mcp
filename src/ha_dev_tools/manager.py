@@ -40,11 +40,16 @@ logger = logging.getLogger(__name__)
 class HAConfigurationManager:
     """Home Assistant Configuration Manager."""
     
-    def __init__(self):
+    def __init__(self, max_file_size: int = 10 * 1024 * 1024):
+        """Initialize the configuration manager.
+
+        Args:
+            max_file_size: Maximum file size in bytes for save operations (default: 10MB)
+        """
         self._connections: Dict[str, HAConnection] = {}
         self._instances: Dict[str, HAInstance] = {}
         self._current_instance_id: Optional[str] = None
-        self.file_saver = FileSaver()
+        self.file_saver = FileSaver(max_file_size=max_file_size)
     
     async def add_instance(self, instance: HAInstance) -> None:
         """Add HA instance to manager."""
