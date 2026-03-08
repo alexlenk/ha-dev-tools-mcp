@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-from ha_config_manager.workflow_state import (
+from ha_dev_tools.workflow_state import (
     WorkflowStateManager,
     WorkflowType,
     WorkflowStatus,

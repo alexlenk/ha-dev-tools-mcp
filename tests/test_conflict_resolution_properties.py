@@ -9,7 +9,7 @@ from hypothesis import given, strategies as st, settings, HealthCheck
 from datetime import datetime, timedelta
 import hashlib
 
-from ha_config_manager.conflict_resolution import (
+from ha_dev_tools.conflict_resolution import (
     FileMetadata,
     ConflictInfo,
     ConflictType,

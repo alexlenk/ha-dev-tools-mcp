@@ -1,7 +1,7 @@
 """Unit tests for MCP tool registration."""
 
 import pytest
-from ha_config_manager.server import handle_list_tools
+from ha_dev_tools.server import handle_list_tools
 
 
 class TestToolRegistration:

@@ -11,8 +11,8 @@ from aioresponses import aioresponses
 from hypothesis import given, strategies as st, settings, HealthCheck
 from jinja2 import Environment
 
-from ha_config_manager.connection.api import HAAPIClient, HAAPIError
-from ha_config_manager.template_validator import extract_entity_references, validate_template_syntax
+from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.template_validator import extract_entity_references, validate_template_syntax
 
 
 # Disable Home Assistant test framework for these tests
@@ -736,7 +736,7 @@ class TestTemplateValidationProperties:
         **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6**
         """
         from jinja2 import TemplateSyntaxError, UndefinedError
-        from ha_config_manager.template_validator import format_template_error, TemplateError
+        from ha_dev_tools.template_validator import format_template_error, TemplateError
         
         # Generate templates with various types of syntax errors
         invalid_templates = [
@@ -853,7 +853,7 @@ class TestTemplateValidationProperties:
         **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6**
         """
         from jinja2 import TemplateSyntaxError
-        from ha_config_manager.template_validator import format_template_error
+        from ha_dev_tools.template_validator import format_template_error
         
         # Multi-line template with error on line 3
         template = """{{ states('sensor.temp') }}
@@ -902,7 +902,7 @@ class TestTemplateValidationProperties:
         
         **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6**
         """
-        from ha_config_manager.template_validator import format_template_error
+        from ha_dev_tools.template_validator import format_template_error
         
         # Create a generic exception without line info
         template = "{{ some template }}"
@@ -939,7 +939,7 @@ class TestTemplateValidationProperties:
         **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6**
         """
         from jinja2 import TemplateSyntaxError
-        from ha_config_manager.template_validator import format_template_error
+        from ha_dev_tools.template_validator import format_template_error
         
         # Single-line template with error
         template = "{{ unclosed"
@@ -979,7 +979,7 @@ class TestTemplateValidationProperties:
         **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6**
         """
         from jinja2 import TemplateSyntaxError
-        from ha_config_manager.template_validator import format_template_error
+        from ha_dev_tools.template_validator import format_template_error
         
         # Multi-line template with error on line 3
         template = """Line 1: {{ states('sensor.temp') }}
@@ -1036,7 +1036,7 @@ Line 5: {{ states('sensor.motion') }}"""
         **Validates: Requirements 1.1, 1.2, 1.3, 1.4, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6**
         """
         from jinja2 import TemplateSyntaxError
-        from ha_config_manager.template_validator import format_template_error, TemplateError
+        from ha_dev_tools.template_validator import format_template_error, TemplateError
         
         # Test with various templates
         test_cases = [

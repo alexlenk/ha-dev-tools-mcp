@@ -2,7 +2,7 @@
 
 import pytest
 from aioresponses import aioresponses
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 
 class TestURLConstruction:
@@ -16,7 +16,7 @@ class TestURLConstruction:
         with aioresponses() as m:
             # File path with spaces should be URL encoded
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files/my%20config.yaml",
+                "http://ha.local:8123/api/ha_dev_tools/files/my%20config.yaml",
                 status=200,
                 body='homeassistant:\n  name: Home'
             )
@@ -35,7 +35,7 @@ class TestURLConstruction:
         with aioresponses() as m:
             # Subdirectory path should be properly encoded
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files/packages/lights.yaml",
+                "http://ha.local:8123/api/ha_dev_tools/files/packages/lights.yaml",
                 status=200,
                 body='light:\n  - platform: hue'
             )
@@ -54,7 +54,7 @@ class TestURLConstruction:
         with aioresponses() as m:
             # Special characters like & and = should be encoded
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files/test%26file%3Dconfig.yaml",
+                "http://ha.local:8123/api/ha_dev_tools/files/test%26file%3Dconfig.yaml",
                 status=200,
                 body='test: data'
             )
@@ -73,7 +73,7 @@ class TestURLConstruction:
         with aioresponses() as m:
             # log_source should be part of the URL path
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/logs/core?lines=100&offset=0&limit=100",
+                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=100&offset=0&limit=100",
                 status=200,
                 body='{"logs": [], "total_count": 0, "source": "core"}'
             )
@@ -169,7 +169,7 @@ class TestURLConstruction:
         with aioresponses() as m:
             # Should handle trailing slash correctly
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files",
+                "http://ha.local:8123/api/ha_dev_tools/files",
                 status=200,
                 body='{"files": [], "directory": ""}'
             )

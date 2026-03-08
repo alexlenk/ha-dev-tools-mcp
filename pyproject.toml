@@ -1,13 +1,28 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
-name = "ha-config-manager-mcp"
-version = "1.0.1"
-description = "Home Assistant Configuration Manager MCP Server"
+name = "ha-dev-tools-mcp"
+version = "1.0.0"
+description = "MCP server for Home Assistant development tools"
+readme = "README.md"
 authors = [{name = "Home Assistant Development Power"}]
 requires-python = ">=3.12"
+license = {text = "MIT"}
+keywords = [
+    "home-assistant",
+    "development",
+    "mcp-server",
+    "model-context-protocol"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Tools"
+]
 dependencies = [
     "mcp>=1.0.0",
     "pydantic>=2.0.0",
@@ -18,8 +33,14 @@ dependencies = [
     "jinja2>=3.0.0"
 ]
 
+[project.urls]
+Homepage = "https://github.com/username/ha-dev-tools-mcp"
+Documentation = "https://github.com/username/ha-dev-tools-mcp#readme"
+Repository = "https://github.com/username/ha-dev-tools-mcp"
+Issues = "https://github.com/username/ha-dev-tools-mcp/issues"
+
 [project.scripts]
-ha-config-manager = "ha_config_manager.__main__:run"
+ha-dev-tools-mcp = "ha_dev_tools.__main__:run"
 
 [project.optional-dependencies]
 dev = [
@@ -34,8 +55,8 @@ dev = [
     "freezegun>=1.2.0"
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/ha_dev_tools"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

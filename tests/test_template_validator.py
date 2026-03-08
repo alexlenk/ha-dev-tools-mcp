@@ -3,7 +3,7 @@
 import pytest
 from jinja2 import TemplateSyntaxError, UndefinedError
 
-from ha_config_manager.template_validator import (
+from ha_dev_tools.template_validator import (
     extract_entity_references,
     validate_template_syntax,
     format_template_error,

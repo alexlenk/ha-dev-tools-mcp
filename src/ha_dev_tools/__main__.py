@@ -1,7 +1,7 @@
 """Entry point for running the MCP server as a module.
 
 This module enables running the server via:
-    python -m ha_config_manager
+    python -m ha_dev_tools
 
 It handles:
 - Importing and calling main() from server.py

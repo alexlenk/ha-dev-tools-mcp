@@ -1,7 +1,7 @@
 """Basic unit tests for HAAPIClient class without HA test framework."""
 
 import pytest
-from ha_config_manager.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 
 
 class TestHAAPIClientBasic:

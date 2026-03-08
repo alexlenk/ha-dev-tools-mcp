@@ -7,7 +7,7 @@ import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
 from aioresponses import aioresponses
 
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 
 # Strategy for generating entity IDs

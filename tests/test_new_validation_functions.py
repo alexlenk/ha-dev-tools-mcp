@@ -1,7 +1,7 @@
 """Tests for new validation functions: validate_template and validate_boolean."""
 
 import pytest
-from ha_config_manager.validation import (
+from ha_dev_tools.validation import (
     ValidationError,
     validate_template,
     validate_boolean

@@ -10,7 +10,7 @@ from aioresponses import aioresponses
 from unittest.mock import Mock, patch
 import json
 
-from ha_config_manager.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 
 
 # Hypothesis strategies for generating test data
@@ -65,7 +65,7 @@ class TestLoggingProperties:
         **Validates: Requirements 10.2**
         """
         # Import server module first
-        import ha_config_manager.server as server_module
+        import ha_dev_tools.server as server_module
         
         # Create a mock logger to capture log calls
         with patch.object(server_module, 'logger') as mock_logger:
@@ -74,19 +74,19 @@ class TestLoggingProperties:
                 # Mock appropriate endpoint for each tool
                 if tool_name == "list_config_files":
                     mock.get(
-                        "http://test.local:8123/api/ha_config_manager/files",
+                        "http://test.local:8123/api/ha_dev_tools/files",
                         status=200,
                         payload={"files": []}
                     )
                 elif tool_name == "read_config_file":
                     mock.get(
-                        "http://test.local:8123/api/ha_config_manager/files/test.yaml",
+                        "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
                         status=200,
                         body="test content"
                     )
                 elif tool_name == "get_logs":
                     mock.get(
-                        "http://test.local:8123/api/ha_config_manager/logs/core",
+                        "http://test.local:8123/api/ha_dev_tools/logs/core",
                         status=200,
                         payload={"logs": []}
                     )
@@ -140,7 +140,7 @@ class TestLoggingProperties:
                     )
                 
                 # Import and call the tool handler
-                from ha_config_manager.server import handle_call_tool
+                from ha_dev_tools.server import handle_call_tool
                 
                 # Set up global api_client
                 server_module.api_client = HAAPIClient("http://test.local:8123", "test_token")
@@ -196,20 +196,20 @@ class TestLoggingProperties:
         **Validates: Requirements 10.3**
         """
         # Import server module first
-        import ha_config_manager.server as server_module
+        import ha_dev_tools.server as server_module
         
         # Create a mock logger to capture log calls
         with patch.object(server_module, 'logger') as mock_logger:
             with aioresponses() as mock:
                 # Mock error response
                 mock.get(
-                    "http://test.local:8123/api/ha_config_manager/files/test.yaml",
+                    "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
                     status=status_code,
                     body=json.dumps({"message": "Test error"})
                 )
                 
                 # Import and call the tool handler
-                from ha_config_manager.server import handle_call_tool
+                from ha_dev_tools.server import handle_call_tool
                 
                 # Set up global api_client
                 server_module.api_client = HAAPIClient("http://test.local:8123", "test_token")
@@ -248,7 +248,7 @@ class TestLoggingProperties:
         **Validates: Requirements 10.4**
         """
         # Import server module first
-        import ha_config_manager.server as server_module
+        import ha_dev_tools.server as server_module
         
         # Create a mock logger to capture log calls
         with patch.object(server_module, 'logger') as mock_logger:
@@ -256,20 +256,20 @@ class TestLoggingProperties:
                 if is_success:
                     # Mock successful response
                     mock.get(
-                        "http://test.local:8123/api/ha_config_manager/files",
+                        "http://test.local:8123/api/ha_dev_tools/files",
                         status=200,
                         payload={"files": []}
                     )
                 else:
                     # Mock error response
                     mock.get(
-                        "http://test.local:8123/api/ha_config_manager/files",
+                        "http://test.local:8123/api/ha_dev_tools/files",
                         status=500,
                         body=json.dumps({"message": "Server error"})
                     )
                 
                 # Import and call the tool handler
-                from ha_config_manager.server import handle_call_tool
+                from ha_dev_tools.server import handle_call_tool
                 
                 # Set up global api_client
                 server_module.api_client = HAAPIClient("http://test.local:8123", "test_token")
@@ -304,27 +304,27 @@ class TestLoggingProperties:
         **Validates: Requirements 6.4, 10.5**
         """
         # Import server module first
-        import ha_config_manager.server as server_module
+        import ha_dev_tools.server as server_module
         
         # Create a mock logger to capture log calls
         with patch.object(server_module, 'logger') as mock_logger:
             with aioresponses() as mock:
                 # Mock successful response
                 mock.get(
-                    "http://test.local:8123/api/ha_config_manager/files",
+                    "http://test.local:8123/api/ha_dev_tools/files",
                     status=200,
                     payload={"files": []}
                 )
                 
                 # Also mock error response for comprehensive testing
                 mock.get(
-                    "http://test.local:8123/api/ha_config_manager/files/error.yaml",
+                    "http://test.local:8123/api/ha_dev_tools/files/error.yaml",
                     status=401,
                     body=json.dumps({"message": "Unauthorized"})
                 )
                 
                 # Import and call the tool handler
-                from ha_config_manager.server import handle_call_tool
+                from ha_dev_tools.server import handle_call_tool
                 
                 # Set up global api_client with the test token
                 server_module.api_client = HAAPIClient("http://test.local:8123", access_token)

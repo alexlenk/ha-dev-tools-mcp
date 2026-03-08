@@ -1,4 +1,4 @@
-"""Home Assistant Configuration Manager MCP Server."""
+"""Home Assistant Development Tools MCP Server."""
 
 from .config import ConfigError, ServerConfig, load_config
 

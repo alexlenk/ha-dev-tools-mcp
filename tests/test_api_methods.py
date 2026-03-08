@@ -2,7 +2,7 @@
 
 import pytest
 from aioresponses import aioresponses
-from ha_config_manager.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 
 
 class TestListFilesMethod:
@@ -15,7 +15,7 @@ class TestListFilesMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files",
+                "http://ha.local:8123/api/ha_dev_tools/files",
                 payload={
                     'files': [
                         {'path': 'configuration.yaml', 'type': 'configuration'},
@@ -40,7 +40,7 @@ class TestListFilesMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files?directory=packages",
+                "http://ha.local:8123/api/ha_dev_tools/files?directory=packages",
                 payload={
                     'files': [
                         {'path': 'packages/lights.yaml', 'type': 'package'}
@@ -71,7 +71,7 @@ class TestReadFileMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files/configuration.yaml",
+                "http://ha.local:8123/api/ha_dev_tools/files/configuration.yaml",
                 body=file_content
             )
             
@@ -90,7 +90,7 @@ class TestReadFileMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files/nonexistent.yaml",
+                "http://ha.local:8123/api/ha_dev_tools/files/nonexistent.yaml",
                 status=404,
                 body='{"message": "File not found"}'
             )
@@ -115,7 +115,7 @@ class TestGetLogsMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/logs/core?lines=100&offset=0&limit=100",
+                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=100&offset=0&limit=100",
                 payload={
                     'logs': [
                         {
@@ -144,7 +144,7 @@ class TestGetLogsMethod:
         
         with aioresponses() as m:
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/logs/core?lines=50&offset=0&limit=25&level=ERROR&search=connection",
+                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=50&offset=0&limit=25&level=ERROR&search=connection",
                 payload={'logs': []}
             )
             

@@ -2,7 +2,7 @@
 
 import pytest
 from aioresponses import aioresponses
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 
 class TestQueryParameterConstruction:
@@ -16,7 +16,7 @@ class TestQueryParameterConstruction:
         with aioresponses() as m:
             # Mock the request and capture the URL
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files?directory=packages",
+                "http://ha.local:8123/api/ha_dev_tools/files?directory=packages",
                 status=200,
                 body='{"files": [], "directory": "packages"}'
             )
@@ -36,7 +36,7 @@ class TestQueryParameterConstruction:
         with aioresponses() as m:
             # Mock the request without directory parameter
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files",
+                "http://ha.local:8123/api/ha_dev_tools/files",
                 status=200,
                 body='{"files": [], "directory": ""}'
             )
@@ -55,7 +55,7 @@ class TestQueryParameterConstruction:
         with aioresponses() as m:
             # Empty directory should result in no query parameter
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/files",
+                "http://ha.local:8123/api/ha_dev_tools/files",
                 status=200,
                 body='{"files": [], "directory": ""}'
             )
@@ -74,7 +74,7 @@ class TestQueryParameterConstruction:
         with aioresponses() as m:
             # Mock with all filter parameters
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/logs/core?lines=50&level=ERROR&search=timeout&offset=10&limit=25",
+                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=50&level=ERROR&search=timeout&offset=10&limit=25",
                 status=200,
                 body='{"logs": [], "total_count": 0, "source": "core"}'
             )
@@ -100,7 +100,7 @@ class TestQueryParameterConstruction:
         with aioresponses() as m:
             # Default parameters: lines=100, offset=0, limit=100
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/logs/core?lines=100&offset=0&limit=100",
+                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=100&offset=0&limit=100",
                 status=200,
                 body='{"logs": [], "total_count": 0, "source": "core"}'
             )
@@ -119,7 +119,7 @@ class TestQueryParameterConstruction:
         with aioresponses() as m:
             # Only level and search specified
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/logs/core?lines=100&level=WARNING&search=error&offset=0&limit=100",
+                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=100&level=WARNING&search=error&offset=0&limit=100",
                 status=200,
                 body='{"logs": [], "total_count": 0, "source": "core"}'
             )
@@ -242,7 +242,7 @@ class TestQueryParameterConstruction:
         with aioresponses() as m:
             # Search term with spaces and special characters
             m.get(
-                "http://ha.local:8123/api/ha_config_manager/logs/core?lines=100&search=error%3A%20timeout&offset=0&limit=100",
+                "http://ha.local:8123/api/ha_dev_tools/logs/core?lines=100&search=error%3A%20timeout&offset=0&limit=100",
                 status=200,
                 body='{"logs": [], "total_count": 0, "source": "core"}'
             )

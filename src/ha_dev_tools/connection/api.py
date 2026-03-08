@@ -252,7 +252,7 @@ class HAAPIClient:
     async def list_files(self, directory: str = "") -> List[Dict[str, Any]]:
         """List configuration files from Home Assistant.
 
-        Makes a GET request to /api/ha_config_manager/files to retrieve
+        Makes a GET request to /api/ha_dev_tools/files to retrieve
         the list of available configuration files.
 
         Args:
@@ -303,7 +303,7 @@ class HAAPIClient:
     ) -> Dict[str, Any]:
         """Read configuration file content from Home Assistant with chunking support.
 
-        Makes a GET request to /api/ha_config_manager/files/{file_path} to
+        Makes a GET request to /api/ha_dev_tools/files/{file_path} to
         retrieve the content of a specific configuration file. Supports pagination
         for large files and optional compression.
 
@@ -417,7 +417,7 @@ class HAAPIClient:
     ) -> Dict[str, Any]:
         """Write content to a configuration file on Home Assistant.
 
-        Makes a PUT request to /api/ha_config_manager/files/{file_path} to
+        Makes a PUT request to /api/ha_dev_tools/files/{file_path} to
         write content to a configuration file. Supports YAML validation and
         conflict detection via expected_hash.
 
@@ -478,7 +478,7 @@ class HAAPIClient:
     async def get_file_metadata(self, file_path: str) -> Dict[str, Any]:
         """Get metadata for a configuration file without reading content.
 
-        Makes a GET request to /api/ha_config_manager/metadata/{file_path} to
+        Makes a GET request to /api/ha_dev_tools/metadata/{file_path} to
         retrieve metadata including path, size, modification timestamp, and content hash.
 
         Args:
@@ -522,7 +522,7 @@ class HAAPIClient:
     async def batch_get_metadata(self, file_paths: List[str]) -> List[Dict[str, Any]]:
         """Get metadata for multiple configuration files in one request.
 
-        Makes a POST request to /api/ha_config_manager/metadata/batch with
+        Makes a POST request to /api/ha_dev_tools/metadata/batch with
         an array of file paths to retrieve metadata for all files efficiently.
 
         Args:
@@ -576,7 +576,7 @@ class HAAPIClient:
     ) -> List[Dict[str, Any]]:
         """Retrieve Home Assistant logs with optional filtering.
 
-        Makes a GET request to /api/ha_config_manager/logs/{log_source} to
+        Makes a GET request to /api/ha_dev_tools/logs/{log_source} to
         retrieve log entries with optional filtering by level, search term,
         and pagination.
 

@@ -2,7 +2,7 @@
 
 import pytest
 from aioresponses import aioresponses
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 
 class TestEntityStateEndpoints:
@@ -425,7 +425,7 @@ class TestConfigCheckEndpoints:
                 body='{"message": "Config check not available"}'
             )
             
-            from ha_config_manager.connection.api import HAAPIError
+            from ha_dev_tools.connection.api import HAAPIError
             with pytest.raises(HAAPIError):
                 await client.check_config()
         

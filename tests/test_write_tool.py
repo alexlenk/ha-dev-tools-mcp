@@ -2,7 +2,7 @@
 
 import pytest
 from aioresponses import aioresponses
-from ha_config_manager.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 
 
 class TestWriteFileMethod:

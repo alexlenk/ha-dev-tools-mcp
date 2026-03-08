@@ -7,7 +7,7 @@ Tests specific examples and edge cases for conflict detection and diff generatio
 import pytest
 from datetime import datetime, timedelta
 
-from ha_config_manager.conflict_resolution import (
+from ha_dev_tools.conflict_resolution import (
     FileMetadata,
     ConflictInfo,
     ConflictType,

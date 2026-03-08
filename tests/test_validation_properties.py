@@ -7,7 +7,7 @@ of input validation functions across a wide range of inputs.
 import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
 
-from ha_config_manager.validation import (
+from ha_dev_tools.validation import (
     ValidationError,
     validate_file_path,
     validate_positive_integer,

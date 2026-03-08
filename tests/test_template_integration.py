@@ -16,8 +16,8 @@ To run only tests that don't require Home Assistant (default):
 import pytest
 import os
 
-from ha_config_manager.connection.api import HAAPIClient
-from ha_config_manager.template_validator import (
+from ha_dev_tools.connection.api import HAAPIClient
+from ha_dev_tools.template_validator import (
     extract_entity_references,
     validate_template_syntax,
     format_entity_validation_warnings,

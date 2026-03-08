@@ -5,7 +5,7 @@ generation, indentation handling, and YAML multi-line string support.
 """
 
 import pytest
-from ha_config_manager.template_validator import (
+from ha_dev_tools.template_validator import (
     validate_template_syntax,
     format_template_error,
     _extract_template_excerpt,

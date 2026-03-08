@@ -9,7 +9,7 @@ Tests the get_file_metadata and batch_get_metadata tools including:
 
 import pytest
 from aioresponses import aioresponses
-from ha_config_manager.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 
 
 @pytest.fixture

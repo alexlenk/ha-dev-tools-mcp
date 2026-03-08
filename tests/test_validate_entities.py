@@ -8,7 +8,7 @@ import asyncio
 import pytest
 from aioresponses import aioresponses
 
-from ha_config_manager.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 
 
 # Disable Home Assistant test framework for these tests

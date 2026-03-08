@@ -11,7 +11,7 @@ import json
 import pytest
 from aioresponses import aioresponses
 
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 
 # Disable Home Assistant test framework for these tests
@@ -33,7 +33,7 @@ class TestValidateTemplateTool:
         template = "{{ states('sensor.temperature') }}"
         
         # Import here to avoid circular imports
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Validate syntax
         is_valid, error_dict = validate_template_syntax(template)
@@ -57,7 +57,7 @@ class TestValidateTemplateTool:
 {% endif %}
 """
         
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Validate syntax
         is_valid, error_dict = validate_template_syntax(template)
@@ -74,7 +74,7 @@ class TestValidateTemplateTool:
         # Template with unclosed tag
         template = "{{ states('sensor.temp') "
         
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Validate syntax
         is_valid, error_dict = validate_template_syntax(template)
@@ -93,7 +93,7 @@ class TestValidateTemplateTool:
         # Template with invalid expression
         template = "{{ states('sensor.temp' }}"
         
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Validate syntax
         is_valid, error_dict = validate_template_syntax(template)
@@ -210,7 +210,7 @@ class TestValidateTemplateTool:
         
         Validates: Requirements 7.1, 7.2
         """
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Valid template with entity reference
         template = "{{ states('sensor.nonexistent') }}"
@@ -226,7 +226,7 @@ class TestValidateTemplateTool:
         
         Validates: Requirements 7.4
         """
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Test with None (should handle gracefully)
         try:
@@ -246,7 +246,7 @@ class TestValidateTemplateTool:
         
         Validates: Requirements 7.2
         """
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Template with undefined variable (valid syntax)
         template = "{{ undefined_variable }}"
@@ -265,7 +265,7 @@ class TestValidateTemplateTool:
         
         Validates: Requirements 7.2
         """
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Template with undefined filter (valid syntax)
         template = "{{ 'value' | undefined_filter }}"
@@ -281,7 +281,7 @@ class TestValidateTemplateTool:
         
         Validates: Requirements 7.1, 7.2, 2.1
         """
-        from ha_config_manager.template_validator import (
+        from ha_dev_tools.template_validator import (
             validate_template_syntax,
             extract_entity_references
         )
@@ -311,7 +311,7 @@ class TestValidateTemplateTool:
         
         Validates: Requirements 7.2
         """
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Template with comments
         template = """
@@ -331,7 +331,7 @@ class TestValidateTemplateTool:
         
         Validates: Requirements 7.2
         """
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Empty template
         template = ""
@@ -348,7 +348,7 @@ class TestValidateTemplateTool:
         
         Validates: Requirements 7.2
         """
-        from ha_config_manager.template_validator import validate_template_syntax
+        from ha_dev_tools.template_validator import validate_template_syntax
         
         # Whitespace-only template
         template = "   \n\t  \n  "

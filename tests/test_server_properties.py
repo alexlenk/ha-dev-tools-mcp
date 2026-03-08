@@ -8,7 +8,7 @@ import pytest
 from hypothesis import given, strategies as st, settings
 from aioresponses import aioresponses
 
-from ha_config_manager.connection.api import HAAPIClient
+from ha_dev_tools.connection.api import HAAPIClient
 
 
 # Hypothesis strategies for generating test data
@@ -70,7 +70,7 @@ class TestToolExecutionProperties:
         with aioresponses() as mock:
             # Mock successful API response
             mock.get(
-                "http://test.local:8123/api/ha_config_manager/files/test.yaml",
+                "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
                 status=200,
                 body=content
             )
@@ -97,12 +97,12 @@ class TestToolExecutionProperties:
         
         **Validates: Requirements 1.4**
         """
-        from ha_config_manager.connection.api import HAAPIError
+        from ha_dev_tools.connection.api import HAAPIError
         
         with aioresponses() as mock:
             # Mock error response
             mock.get(
-                "http://test.local:8123/api/ha_config_manager/files/test.yaml",
+                "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
                 status=status_code,
                 body=json.dumps({"message": "Test error"})
             )
@@ -136,7 +136,7 @@ class TestToolExecutionProperties:
         with aioresponses() as mock:
             # Mock successful JSON response
             mock.get(
-                "http://test.local:8123/api/ha_config_manager/files",
+                "http://test.local:8123/api/ha_dev_tools/files",
                 status=200,
                 payload=response_data
             )
@@ -166,7 +166,7 @@ class TestToolExecutionProperties:
         with aioresponses() as mock:
             # Mock file content response
             mock.get(
-                "http://test.local:8123/api/ha_config_manager/files/test.yaml",
+                "http://test.local:8123/api/ha_dev_tools/files/test.yaml",
                 status=200,
                 body=content
             )

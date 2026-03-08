@@ -2,8 +2,8 @@
 
 import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from ha_config_manager.manager import HAConfigurationManager
-from ha_config_manager.types import HAInstance, ConnectionType, ConnectionConfig
+from ha_dev_tools.manager import HAConfigurationManager
+from ha_dev_tools.types import HAInstance, ConnectionType, ConnectionConfig
 
 
 class TestManagerCleanup:

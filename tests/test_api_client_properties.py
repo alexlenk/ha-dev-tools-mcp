@@ -11,7 +11,7 @@ import pytest
 from aioresponses import aioresponses
 from hypothesis import given, strategies as st, settings, HealthCheck
 
-from ha_config_manager.connection.api import HAAPIClient, HAAPIError
+from ha_dev_tools.connection.api import HAAPIClient, HAAPIError
 
 
 # Disable Home Assistant test framework for these tests
@@ -153,7 +153,7 @@ class TestAPIClientProperties:
             api_response = {'files': response_data if isinstance(response_data, list) else [response_data]}
             
             mock.get(
-                f"{url}/api/ha_config_manager/files",
+                f"{url}/api/ha_dev_tools/files",
                 status=200,
                 payload=api_response,
                 repeat=True
@@ -193,7 +193,7 @@ class TestAPIClientProperties:
         # Mock the API error response
         with aioresponses() as mock:
             mock.get(
-                f"{url}/api/ha_config_manager/files",
+                f"{url}/api/ha_dev_tools/files",
                 status=status_code,
                 body="Error message from API",
                 repeat=True
@@ -236,7 +236,7 @@ class TestAPIClientProperties:
         # Mock the API response with file content
         with aioresponses() as mock:
             mock.get(
-                f"{url}/api/ha_config_manager/files/{file_path}",
+                f"{url}/api/ha_dev_tools/files/{file_path}",
                 status=200,
                 body=content,
                 repeat=True

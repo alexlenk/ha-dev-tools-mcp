@@ -11,8 +11,8 @@ from typing import Any, Dict
 import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
 
-from ha_config_manager.manager import HAConfigurationManager
-from ha_config_manager.types import (
+from ha_dev_tools.manager import HAConfigurationManager
+from ha_dev_tools.types import (
     AuthConfig,
     AuthMethod,
     ConnectionConfig,
