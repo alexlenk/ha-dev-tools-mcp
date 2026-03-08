@@ -28,7 +28,7 @@ jobs:
       
       - name: Run tests
         run: |
-          PYTHONPATH=src pytest tests/ -v --cov=ha_dev_tools --cov-report=term-missing --tb=short
+          PYTHONPATH=src pytest tests/ -v --tb=short
       
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
