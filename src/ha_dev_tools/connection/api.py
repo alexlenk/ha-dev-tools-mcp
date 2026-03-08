@@ -12,11 +12,10 @@ import gzip
 import hashlib
 import json
 from typing import Dict, List, Optional, Any, Union
-from urllib.parse import urljoin
 
 import aiohttp
 
-from ..types import HAConnection, ConnectionError
+from ..types import ConnectionError
 
 
 class HAAPIError(Exception):
@@ -368,7 +367,7 @@ class HAAPIClient:
                 await self._handle_response_errors(response, file_path=file_path)
 
                 # Get metadata from headers
-                content_length = response.headers.get('Content-Length')
+                response.headers.get('Content-Length')
                 total_size_header = response.headers.get('X-Total-Size')
                 offset_header = response.headers.get('X-Offset', str(offset))
                 has_more_header = response.headers.get('X-Has-More', 'false')
@@ -1328,7 +1327,7 @@ class HAAPIConnection:
             # Try to read the file - if it succeeds, it exists
             await self.read_file(filename)
             return True
-        except:
+        except Exception:
             return False
     
     async def read_file(self, file_path: str) -> str:
@@ -1553,7 +1552,7 @@ homeassistant:
         """Write automations using HA automation API."""
         try:
             import yaml
-            automations = yaml.safe_load(content)
+            yaml.safe_load(content)
             
             # This would require updating each automation individually
             # via the automation config API
@@ -1568,7 +1567,7 @@ homeassistant:
         """Write scripts using HA script API."""
         try:
             import yaml
-            scripts = yaml.safe_load(content)
+            yaml.safe_load(content)
             
             # This would require updating each script individually
             # via the script config API

@@ -4,13 +4,12 @@ This module provides data structures and methods for tracking development workfl
 state across sessions, enabling workflow resumption and conflict detection.
 """
 
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional
 import json
-import os
 
 
 class WorkflowType(str, Enum):

@@ -8,9 +8,7 @@ Package: ha-dev-tools-mcp
 """
 
 import logging
-import os
 from datetime import datetime
-from pathlib import Path
 from typing import Dict, List, Optional
 
 import yaml
@@ -27,10 +25,10 @@ from .types import (
     ConfigError,
     HAConnection,
     HAInstance,
-    SaveResult,
     ValidationError,
     ValidationResult,
     ValidationSeverity,
+    ValidationWarning,
 )
 
 # Configure logging
@@ -307,7 +305,6 @@ class HAConfigurationManager:
             return
         
         # Check for common HA configuration sections
-        ha_sections = ['homeassistant', 'automation', 'script', 'sensor', 'binary_sensor', 'switch']
         
         # Validate homeassistant section if present
         if 'homeassistant' in data:

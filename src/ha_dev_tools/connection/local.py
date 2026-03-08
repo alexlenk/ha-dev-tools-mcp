@@ -1,12 +1,11 @@
 """Local Home Assistant connection implementation."""
 
-import os
 from pathlib import Path
 from typing import List
 
 import aiofiles
 
-from ..types import HAConnection, ConnectionError
+from ..types import ConnectionError
 
 
 class LocalHAConnection:

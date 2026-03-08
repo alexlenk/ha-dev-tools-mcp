@@ -1,6 +1,5 @@
 """Path validation for file save security."""
 
-from typing import Optional
 
 
 class SecurityError(Exception):
