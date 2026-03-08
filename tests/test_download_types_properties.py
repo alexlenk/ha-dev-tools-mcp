@@ -199,8 +199,6 @@ def test_save_result_serialization_preserves_types(result):
     assert type(reconstructed.remote_path) == type(result.remote_path)
 
 
-@given(config=save_config_strategy())
-@settings(max_examples=100)
 def test_save_config_default_values():
     """
     Property: SaveConfig can be created with default values.
