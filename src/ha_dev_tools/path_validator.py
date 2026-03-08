@@ -31,9 +31,11 @@ class PathValidator:
         
         for root in allowed_roots:
             try:
-                resolved.relative_to(root)
+                # Resolve both paths to handle symlinks (e.g., /tmp -> /private/tmp on macOS)
+                resolved_root = root.resolve()
+                resolved.relative_to(resolved_root)
                 return True, None
-            except ValueError:
+            except (ValueError, OSError, RuntimeError):
                 continue
         
         allowed_paths_str = ', '.join(str(r) for r in allowed_roots)
