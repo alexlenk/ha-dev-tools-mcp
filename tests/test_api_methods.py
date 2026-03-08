@@ -75,11 +75,16 @@ class TestReadFileMethod:
                 body=file_content
             )
             
-            content = await client.read_file('configuration.yaml')
+            result = await client.read_file('configuration.yaml')
+            
+            # Verify result structure
+            assert isinstance(result, dict), "Result should be a dictionary"
+            assert 'content' in result, "Result should have 'content' key"
+            assert 'metadata' in result, "Result should have 'metadata' key"
             
             # Verify content was returned
-            assert content == file_content
-            assert 'homeassistant:' in content
+            assert result['content'] == file_content
+            assert 'homeassistant:' in result['content']
         
         await client.close()
     

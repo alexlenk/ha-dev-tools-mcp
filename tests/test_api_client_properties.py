@@ -246,19 +246,25 @@ class TestAPIClientProperties:
                 repeat=True
             )
             
-            # Property: File content should be returned unchanged
+            # Property: File content should be returned unchanged in the content field
             result = await client.read_file(file_path)
             
-            assert result == content, "File content should be preserved exactly"
-            assert type(result) == type(content), "Content type should be preserved"
+            # Result should be a dictionary with content and metadata
+            assert isinstance(result, dict), "Result should be a dictionary"
+            assert 'content' in result, "Result should have 'content' key"
+            assert 'metadata' in result, "Result should have 'metadata' key"
             
-            # Verify whitespace preservation
+            # Content should match exactly
+            assert result['content'] == content, "File content should be preserved exactly"
+            assert type(result['content']) == type(content), "Content type should be preserved"
+            
+            # Verify whitespace preservation in content
             if '\n' in content:
-                assert '\n' in result, "Newlines should be preserved"
+                assert '\n' in result['content'], "Newlines should be preserved"
             if '\t' in content:
-                assert '\t' in result, "Tabs should be preserved"
+                assert '\t' in result['content'], "Tabs should be preserved"
             if '  ' in content:
-                assert '  ' in result, "Spaces should be preserved"
+                assert '  ' in result['content'], "Spaces should be preserved"
             
             await client.close()
     

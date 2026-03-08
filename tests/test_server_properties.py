@@ -80,8 +80,10 @@ class TestToolExecutionProperties:
             # Property: Valid tool call should return result (not raise exception)
             result = await client.read_file("test.yaml")
             
-            # Property: Result should be the content (successful execution)
-            assert result == content, "Tool execution should return expected result"
+            # Property: Result should be a dictionary with content and metadata
+            assert isinstance(result, dict), "Result should be a dictionary"
+            assert 'content' in result, "Result should have 'content' key"
+            assert result['content'] == content, "Tool execution should return expected content"
             
             await client.close()
     
@@ -173,8 +175,10 @@ class TestToolExecutionProperties:
             
             client = HAAPIClient("http://test.local:8123", "test_token")
             
-            # Property: Content should be returned unchanged
+            # Property: Content should be returned unchanged in the content field
             result = await client.read_file("test.yaml")
-            assert result == content, "File content should be preserved exactly"
+            assert isinstance(result, dict), "Result should be a dictionary"
+            assert 'content' in result, "Result should have 'content' key"
+            assert result['content'] == content, "File content should be preserved exactly"
             
             await client.close()

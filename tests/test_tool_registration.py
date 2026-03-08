@@ -9,18 +9,20 @@ class TestToolRegistration:
     
     @pytest.mark.asyncio
     async def test_all_tools_registered(self):
-        """Test that all 14 tools are registered."""
+        """Test that all 17 tools are registered."""
         tools = await handle_list_tools()
         
-        # Should have exactly 14 tools
-        assert len(tools) == 14
+        # Should have exactly 17 tools
+        assert len(tools) == 17
         
         # Verify all expected tool names are present
         tool_names = [tool.name for tool in tools]
         expected_tools = [
-            # File Access (3 tools)
+            # File Access (5 tools - added write_config_file and get_file_metadata)
             "list_config_files",
             "read_config_file",
+            "write_config_file",
+            "get_file_metadata",
             "get_logs",
             # Entity & State (2 tools)
             "get_states",
@@ -35,9 +37,10 @@ class TestToolRegistration:
             "list_services",
             # Configuration (1 tool)
             "check_config",
-            # Diagnostics (2 tools)
+            # Diagnostics (3 tools - added get_system_health)
             "get_error_log",
-            "get_logbook"
+            "get_logbook",
+            "get_system_health"
         ]
         
         assert set(tool_names) == set(expected_tools)
