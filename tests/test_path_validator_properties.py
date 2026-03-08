@@ -1,16 +1,14 @@
 """Property-based tests for PathValidator.
 
 Feature: file-download-capability
-Property 17: Path traversal sequences are detected and sanitized
-Validates: Requirements 6.2
+Property 9: Path traversal prevention
+Validates: Requirements 4.1
 """
-
-from pathlib import Path
 
 import pytest
 from hypothesis import given, settings, strategies as st
 
-from ha_dev_tools.path_validator import PathValidator
+from ha_dev_tools.path_validator import PathValidator, SecurityError
 
 
 # Hypothesis strategies
@@ -55,181 +53,168 @@ def safe_path(draw):
     return "/".join(components)
 
 
-@st.composite
-def allowed_download_dir(draw):
-    """Generate paths under allowed roots."""
-    root = draw(st.sampled_from([Path.home(), Path("/tmp")]))
-    subdir = draw(st.text(
-        alphabet=st.characters(whitelist_categories=('L', 'N'), whitelist_characters='-_'),
-        min_size=1,
-        max_size=20
-    ))
-    return root / subdir
-
-
-@st.composite
-def disallowed_download_dir(draw):
-    """Generate paths outside allowed roots."""
-    # Generate paths that are definitely not under home or /tmp
-    forbidden_roots = ["/etc", "/var", "/usr", "/opt", "/root"]
-    root = draw(st.sampled_from(forbidden_roots))
-    subdir = draw(st.text(
-        alphabet=st.characters(whitelist_categories=('L', 'N'), whitelist_characters='-_'),
-        min_size=1,
-        max_size=20
-    ))
-    return Path(root) / subdir
-
-
 # Property tests
 
 @given(path=path_with_traversal())
 @settings(max_examples=100)
-def test_property_17_traversal_detected(path):
+def test_property_9_traversal_rejected(path):
     """
-    Property 17: Path traversal sequences are detected and sanitized.
+    Property 9: Path traversal sequences are rejected.
     
     For any path containing traversal sequences (../, ..\\), the sanitize
-    function should detect and remove them.
+    function should raise SecurityError.
     """
-    sanitized, was_modified = PathValidator.sanitize_remote_path(path)
+    with pytest.raises(SecurityError) as exc_info:
+        PathValidator.sanitize_remote_path(path)
     
-    # Should be marked as modified
-    assert was_modified, f"Path with traversal should be marked as modified: {path}"
-    
-    # Sanitized path should not contain traversal sequences
-    assert "../" not in sanitized, f"Sanitized path still contains ../: {sanitized}"
-    assert "..\\" not in sanitized, f"Sanitized path still contains ..\\: {sanitized}"
+    # Error message should mention invalid path
+    assert "Invalid path" in str(exc_info.value)
 
 
 @given(path=safe_path())
 @settings(max_examples=100)
-def test_property_safe_paths_unchanged(path):
+def test_property_safe_paths_accepted(path):
     """
-    Property: Safe paths without traversal sequences are not modified.
+    Property: Safe paths without traversal sequences are accepted.
     
-    For any path without traversal sequences, sanitization should not
-    modify the path.
+    For any path without traversal sequences, sanitization should succeed
+    and return a normalized path.
     """
     # Skip if path accidentally contains traversal
-    if "../" in path or "..\\" in path:
+    if "../" in path or "..\\" in path or ".." in path:
         return
     
-    sanitized, was_modified = PathValidator.sanitize_remote_path(path)
-    
-    # Should not be marked as modified
-    assert not was_modified, f"Safe path should not be modified: {path}"
-    
-    # Path should be unchanged (except leading slashes)
-    assert sanitized == path.lstrip("/\\"), f"Safe path was changed: {path} -> {sanitized}"
-
-
-@given(path=allowed_download_dir())
-@settings(max_examples=50)
-def test_property_allowed_dirs_accepted(path):
-    """
-    Property: Paths under allowed roots are accepted.
-    
-    For any path under user home or /tmp, validation should succeed.
-    """
-    is_valid, error_msg = PathValidator.validate_download_dir(path)
-    
-    # Should be valid
-    assert is_valid, f"Allowed path rejected: {path}, error: {error_msg}"
-    assert error_msg is None, f"Valid path should not have error message: {error_msg}"
-
-
-@given(path=disallowed_download_dir())
-@settings(max_examples=50)
-def test_property_disallowed_dirs_rejected(path):
-    """
-    Property: Paths outside allowed roots are rejected.
-    
-    For any path not under user home or /tmp, validation should fail.
-    """
-    # Skip if path accidentally falls under allowed roots
     try:
-        resolved = path.resolve()
-        for allowed_root in [Path.home(), Path("/tmp")]:
-            try:
-                resolved.relative_to(allowed_root)
-                # Path is actually under allowed root, skip
-                return
-            except ValueError:
-                continue
-    except (OSError, RuntimeError):
-        # Can't resolve, will be rejected anyway
-        pass
-    
-    is_valid, error_msg = PathValidator.validate_download_dir(path)
-    
-    # Should be invalid
-    assert not is_valid, f"Disallowed path accepted: {path}"
-    assert error_msg is not None, f"Invalid path should have error message"
-    assert "must be under" in error_msg.lower(), f"Error message should mention allowed roots: {error_msg}"
+        sanitized = PathValidator.sanitize_remote_path(path)
+        
+        # Should not contain traversal sequences
+        assert "../" not in sanitized
+        assert "..\\" not in sanitized
+        
+        # Should have normalized separators
+        assert "\\" not in sanitized
+        
+        # Should not have leading slashes
+        assert not sanitized.startswith("/")
+        
+    except SecurityError:
+        pytest.fail(f"Safe path should not raise SecurityError: {path}")
 
 
 @given(traversal=path_traversal_sequence(), filename=valid_filename())
 @settings(max_examples=100)
-def test_property_leading_traversal_removed(traversal, filename):
+def test_property_leading_traversal_rejected(traversal, filename):
     """
-    Property: Leading traversal sequences are removed.
+    Property: Leading traversal sequences are rejected.
     
     For any path starting with traversal sequences, sanitization should
-    remove them completely.
+    raise SecurityError.
     """
     path = traversal + filename
-    sanitized, was_modified = PathValidator.sanitize_remote_path(path)
     
-    # Should be modified
-    assert was_modified, f"Path with leading traversal should be modified: {path}"
+    with pytest.raises(SecurityError) as exc_info:
+        PathValidator.sanitize_remote_path(path)
     
-    # Should not start with traversal
-    assert not sanitized.startswith("../"), f"Sanitized path starts with ../: {sanitized}"
-    assert not sanitized.startswith("..\\"), f"Sanitized path starts with ..\\: {sanitized}"
-    
-    # Should contain the filename
-    assert filename in sanitized, f"Filename lost during sanitization: {filename} not in {sanitized}"
+    assert "Invalid path" in str(exc_info.value)
 
 
 @given(path=st.text(min_size=1, max_size=100))
 @settings(max_examples=100)
-def test_property_sanitize_always_returns_string(path):
+def test_property_sanitize_returns_string_or_raises(path):
     """
-    Property: Sanitize always returns a string and boolean.
+    Property: Sanitize either returns a string or raises SecurityError.
     
-    For any input string, sanitize_remote_path should return a tuple
-    of (string, boolean) without raising exceptions.
+    For any input string, sanitize_remote_path should either return a
+    string or raise SecurityError (never other exceptions).
     """
     try:
         result = PathValidator.sanitize_remote_path(path)
         
-        # Should return tuple
-        assert isinstance(result, tuple), f"Should return tuple, got {type(result)}"
-        assert len(result) == 2, f"Should return 2-tuple, got {len(result)}"
+        # Should return string
+        assert isinstance(result, str), f"Should return string, got {type(result)}"
         
-        sanitized, was_modified = result
+        # Should not contain traversal
+        assert ".." not in result, f"Result contains ..: {result}"
         
-        # Check types
-        assert isinstance(sanitized, str), f"Sanitized should be string, got {type(sanitized)}"
-        assert isinstance(was_modified, bool), f"was_modified should be bool, got {type(was_modified)}"
+        # Should not have leading slashes
+        assert not result.startswith("/"), f"Result has leading slash: {result}"
+        assert not result.startswith("\\"), f"Result has leading backslash: {result}"
         
+    except SecurityError:
+        # This is expected for invalid paths
+        pass
     except Exception as e:
-        pytest.fail(f"sanitize_remote_path raised exception for input '{path}': {e}")
+        pytest.fail(f"sanitize_remote_path raised unexpected exception for input '{path}': {e}")
 
 
-@given(path=st.text(min_size=1, max_size=100))
+@given(path=safe_path())
 @settings(max_examples=100)
 def test_property_multiple_sanitize_idempotent(path):
     """
     Property: Multiple sanitizations are idempotent.
     
-    For any path, sanitizing multiple times should produce the same result
-    as sanitizing once.
+    For any safe path, sanitizing multiple times should produce the same
+    result as sanitizing once.
     """
-    sanitized1, _ = PathValidator.sanitize_remote_path(path)
-    sanitized2, was_modified2 = PathValidator.sanitize_remote_path(sanitized1)
+    # Skip if path contains traversal
+    if ".." in path:
+        return
     
-    # Second sanitization should not modify
-    assert not was_modified2, f"Second sanitization modified path: {sanitized1} -> {sanitized2}"
-    assert sanitized1 == sanitized2, f"Multiple sanitizations not idempotent: {sanitized1} != {sanitized2}"
+    try:
+        sanitized1 = PathValidator.sanitize_remote_path(path)
+        sanitized2 = PathValidator.sanitize_remote_path(sanitized1)
+        
+        # Should be identical
+        assert sanitized1 == sanitized2, f"Multiple sanitizations not idempotent: {sanitized1} != {sanitized2}"
+        
+    except SecurityError:
+        # If first sanitization fails, that's fine
+        pass
+
+
+@given(filename=valid_filename())
+@settings(max_examples=100)
+def test_property_simple_filenames_preserved(filename):
+    """
+    Property: Simple filenames without paths are preserved.
+    
+    For any simple filename (no path separators), sanitization should
+    preserve the filename.
+    """
+    # Skip if filename contains path separators or dots
+    if "/" in filename or "\\" in filename or ".." in filename:
+        return
+    
+    try:
+        sanitized = PathValidator.sanitize_remote_path(filename)
+        
+        # Should preserve the filename
+        assert sanitized == filename, f"Filename not preserved: {filename} -> {sanitized}"
+        
+    except SecurityError:
+        pytest.fail(f"Simple filename should not raise SecurityError: {filename}")
+
+
+@given(components=st.lists(valid_filename(), min_size=2, max_size=5))
+@settings(max_examples=100)
+def test_property_path_structure_preserved(components):
+    """
+    Property: Path structure is preserved for safe paths.
+    
+    For any path made of safe components, the structure should be preserved
+    after sanitization (only leading slashes removed).
+    """
+    # Skip if any component contains dots
+    if any(".." in c for c in components):
+        return
+    
+    path = "/".join(components)
+    
+    try:
+        sanitized = PathValidator.sanitize_remote_path(path)
+        
+        # Should preserve structure (components separated by /)
+        assert all(c in sanitized for c in components), f"Components lost: {components} -> {sanitized}"
+        
+    except SecurityError:
+        pytest.fail(f"Safe path should not raise SecurityError: {path}")
