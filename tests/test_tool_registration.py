@@ -18,11 +18,12 @@ class TestToolRegistration:
         # Verify all expected tool names are present
         tool_names = [tool.name for tool in tools]
         expected_tools = [
-            # File Access (5 tools - added write_config_file and get_file_metadata)
+            # File Access (6 tools)
             "list_config_files",
             "read_config_file",
             "write_config_file",
             "get_file_metadata",
+            "batch_get_metadata",
             "get_logs",
             # Entity & State (2 tools)
             "get_states",
@@ -31,16 +32,15 @@ class TestToolRegistration:
             "call_service",
             "render_template",
             "validate_template",
-            # System Information (3 tools)
+            # System Information (4 tools)
             "get_config",
             "list_events",
             "list_services",
+            "get_logbook",
             # Configuration (1 tool)
             "check_config",
-            # Diagnostics (3 tools - added get_system_health)
-            "get_error_log",
-            "get_logbook",
-            "get_system_health"
+            # Diagnostics (1 tool)
+            "get_error_log"
         ]
         
         assert set(tool_names) == set(expected_tools)

@@ -317,8 +317,6 @@ class TestTemplateValidationProperties:
                 await client.close()
                 await asyncio.sleep(0.1)
     
-    @given()
-    @settings(suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=50)
     async def test_property_2_empty_entity_list(self):
         """
         **Property 2 (Edge Case): Empty Entity List**
