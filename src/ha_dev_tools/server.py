@@ -418,14 +418,37 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
             limit = arguments.get("limit")
             compress = arguments.get("compress", False)
 
-            # Call API client with all parameters (including save_local)
+            # Validate mutually exclusive parameters
+            if save_local and (offset > 0 or limit is not None):
+                raise ValueError(
+                    "save_local cannot be used with offset or limit parameters"
+                )
+
+            # Call API client (without save_local parameter)
             result = await api_client.read_file(
                 file_path=file_path,
-                save_local=save_local,
                 offset=offset,
                 limit=limit,
                 compress=compress,
             )
+
+            # If save_local is requested, save the file and return save result
+            if save_local:
+                from .file_saver import FileSaver
+
+                file_saver = FileSaver()
+                save_result = await file_saver.save_file(
+                    remote_path=file_path, content=result["content"]
+                )
+
+                # Return save result with metadata
+                response = {
+                    "local_path": save_result.local_path,
+                    "file_size": save_result.file_size,
+                    "remote_path": save_result.remote_path,
+                    "content_hash": result["metadata"]["content_hash"],
+                }
+                return [TextContent(type="text", text=json.dumps(response, indent=2))]
 
             # Return structured response with content and metadata
             return [TextContent(type="text", text=json.dumps(result, indent=2))]
