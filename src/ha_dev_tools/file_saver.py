@@ -1,7 +1,6 @@
-"""File saver for saving large files to local temporary directory."""
+"""File saver for saving files to local workspace directory."""
 
 import hashlib
-import tempfile
 from pathlib import Path
 
 import aiofiles
@@ -11,28 +10,33 @@ from .path_validator import SecurityError
 
 
 class FileSaver:
-    """Handles saving files to local temporary directory."""
+    """Handles saving files to local workspace directory."""
 
-    def __init__(self, max_file_size: int = 10 * 1024 * 1024):  # 10MB default
+    def __init__(
+        self,
+        workspace_dir: str = "~/ha-dev-workspace/",
+        max_file_size: int = 10 * 1024 * 1024,  # 10MB default
+    ):
         """
         Initialize file saver.
 
         Args:
+            workspace_dir: Workspace directory path (default ~/ha-dev-workspace/)
             max_file_size: Maximum file size in bytes (default 10MB)
         """
         self.max_file_size = max_file_size
-        self.temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
+        self.workspace_dir = Path(workspace_dir).expanduser().resolve()
 
     async def save_file(self, remote_path: str, content: str) -> SaveResult:
         """
-        Save file content to local temporary directory.
+        Save file content to local workspace directory.
 
         Args:
             remote_path: Original file path on HA instance (e.g., "config/automations.yaml")
             content: File content as string
 
         Returns:
-            SaveResult with local path and file size
+            SaveResult with local path, file size, and checksum
 
         Raises:
             SecurityError: If path validation fails or file too large
@@ -49,7 +53,7 @@ class FileSaver:
         sanitized_path = self._sanitize_path(remote_path)
 
         # Create local path mirroring remote structure
-        local_path = self.temp_dir / sanitized_path
+        local_path = self.workspace_dir / sanitized_path
 
         # Create parent directories
         local_path.parent.mkdir(parents=True, exist_ok=True)

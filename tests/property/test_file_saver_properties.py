@@ -1,6 +1,8 @@
 """Property-based tests for FileSaver class."""
 
 import asyncio
+import hashlib
+import shutil
 import tempfile
 from pathlib import Path
 
@@ -35,37 +37,22 @@ content_strategy = st.text(
 )
 
 
-@pytest.fixture
-def file_saver():
-    """Create FileSaver instance for testing."""
-    return FileSaver()
+def _make_workspace():
+    """Create a temporary workspace directory and return (workspace_path, FileSaver)."""
+    workspace = Path(tempfile.mkdtemp(prefix="ha-dev-test-")).resolve()
+    return workspace, FileSaver(workspace_dir=str(workspace))
 
 
-@pytest.fixture(autouse=True)
-def cleanup_temp_dir():
-    """Clean up temp directory before and after tests."""
-    # Cleanup before test
-    temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
-    yield
-
-    # Cleanup after test
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
+def _cleanup_workspace(workspace: Path):
+    """Remove a temporary workspace directory."""
+    if workspace.exists():
+        shutil.rmtree(workspace, ignore_errors=True)
 
 
 # Property 1: File Save Creates Local File
 @given(content=content_strategy, path=nested_path_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_property_file_save_creates_local_file(
-    file_saver, cleanup_temp_dir, content, path
-):
+def test_property_file_save_creates_local_file(content, path):
     """
     Property 1: File Save Creates Local File
 
@@ -75,13 +62,7 @@ def test_property_file_save_creates_local_file(
 
     Validates: Requirements 1.1, 1.5
     """
-    # Clean up before each example
-    temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
+    workspace, file_saver = _make_workspace()
     try:
         result = asyncio.run(file_saver.save_file(path, content))
 
@@ -95,22 +76,48 @@ def test_property_file_save_creates_local_file(
         # Verify file is readable
         assert local_path.is_file(), f"Path should be a file: {result.local_path}"
 
-        # Verify content matches (use newline='' to preserve original line endings)
+        # Verify content matches
         with open(local_path, "r", encoding="utf-8", newline="") as f:
             saved_content = f.read()
         assert saved_content == content, "Saved content should match original"
 
     except SecurityError:
-        # If path validation fails, that's acceptable for this property
         pass
+    finally:
+        _cleanup_workspace(workspace)
 
 
-# Property 4: Temp Directory Creation
+# Property 2: Checksum Consistency
+@given(content=content_strategy, path=nested_path_strategy)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_property_checksum_consistency(content, path):
+    """
+    Property 2: Checksum Consistency
+
+    For any file content, the checksum returned by save_file SHALL equal
+    SHA-256(content.encode('utf-8')).
+
+    Validates: Requirements 2.3, 2.4
+    """
+    workspace, file_saver = _make_workspace()
+    try:
+        result = asyncio.run(file_saver.save_file(path, content))
+
+        expected = hashlib.sha256(content.encode("utf-8")).hexdigest()
+        assert result.checksum == expected, "Checksum should match SHA-256 of content"
+
+    except SecurityError:
+        pass
+    finally:
+        _cleanup_workspace(workspace)
+
+
+# Property 4: Workspace Directory Creation
 @given(path=nested_path_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_property_temp_directory_creation(file_saver, cleanup_temp_dir, path):
+def test_property_workspace_directory_creation(path):
     """
-    Property 4: Temp Directory Creation
+    Property 4: Workspace Directory Creation
 
     For any nested path, verify:
     - All parent directories are created
@@ -118,13 +125,7 @@ def test_property_temp_directory_creation(file_saver, cleanup_temp_dir, path):
 
     Validates: Requirements 1.4, 2.1
     """
-    # Clean up before each example
-    temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
+    workspace, file_saver = _make_workspace()
     content = "test content"
 
     try:
@@ -134,60 +135,53 @@ def test_property_temp_directory_creation(file_saver, cleanup_temp_dir, path):
 
         # Verify all parent directories exist
         assert local_path.parent.exists(), "Parent directories should be created"
-
-        # Verify parent is a directory
         assert local_path.parent.is_dir(), "Parent should be a directory"
 
         # Verify we can read the directory (permissions check)
-        list(local_path.parent.iterdir())  # Should not raise PermissionError
+        list(local_path.parent.iterdir())
 
     except SecurityError:
-        # If path validation fails, that's acceptable
         pass
+    finally:
+        _cleanup_workspace(workspace)
 
 
 # Property 5: Path Structure Preservation
 @given(path=nested_path_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_property_path_structure_preservation(file_saver, cleanup_temp_dir, path):
+def test_property_path_structure_preservation(path):
     """
     Property 5: Path Structure Preservation
 
     For any remote path, verify:
     - Local path preserves structure
-    - Path is under temp_dir / "ha-dev-tools"
+    - Path is under the workspace directory
 
     Validates: Requirements 2.2
     """
-    # Clean up before each example
-    temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
+    workspace, file_saver = _make_workspace()
     content = "test content"
 
     try:
         result = asyncio.run(file_saver.save_file(path, content))
 
         local_path = Path(result.local_path)
-        temp_base = Path(tempfile.gettempdir()) / "ha-dev-tools"
 
-        # Verify path is under temp directory
+        # Verify path is under workspace directory
         assert str(local_path).startswith(
-            str(temp_base)
-        ), f"Local path should be under {temp_base}"
+            str(workspace)
+        ), f"Local path should be under {workspace}"
 
-        # Verify structure is preserved (path components match)
+        # Verify structure is preserved
         sanitized_path = path.lstrip("/").replace("\\", "/")
         assert str(local_path).endswith(
             sanitized_path
         ), f"Local path should preserve structure: {sanitized_path}"
 
     except SecurityError:
-        # If path validation fails, that's acceptable
         pass
+    finally:
+        _cleanup_workspace(workspace)
 
 
 # Property 6: Filename Preservation
@@ -198,9 +192,7 @@ def test_property_path_structure_preservation(file_saver, cleanup_temp_dir, path
     filename=valid_path_strategy,
 )
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_property_filename_preservation(
-    file_saver, cleanup_temp_dir, directory, filename
-):
+def test_property_filename_preservation(directory, filename):
     """
     Property 6: Filename Preservation
 
@@ -209,13 +201,7 @@ def test_property_filename_preservation(
 
     Validates: Requirements 1.5
     """
-    # Clean up before each example
-    temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
+    workspace, file_saver = _make_workspace()
     content = "test content"
     remote_path = f"{directory}/{filename}" if directory else filename
 
@@ -223,103 +209,72 @@ def test_property_filename_preservation(
         result = asyncio.run(file_saver.save_file(remote_path, content))
 
         local_path = Path(result.local_path)
-
-        # Verify filename matches
         assert (
             local_path.name == filename
         ), f"Filename should be preserved: expected {filename}, got {local_path.name}"
 
     except SecurityError:
-        # If path validation fails, that's acceptable
         pass
+    finally:
+        _cleanup_workspace(workspace)
 
 
 # Property 7: Overwrite Behavior
 @given(path=nested_path_strategy, content1=content_strategy, content2=content_strategy)
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_property_overwrite_behavior(
-    file_saver, cleanup_temp_dir, path, content1, content2
-):
+def test_property_overwrite_behavior(path, content1, content2):
     """
     Property 7: Overwrite Behavior
 
     For any file saved twice to same path, verify:
     - Only one file exists
-    - Second save overwrites first (content matches second save)
+    - Second save overwrites first
 
     Validates: Requirements 2.3
-
-    Note: Text mode file writing may normalize line endings (e.g., \r -> \n on Unix),
-    so we verify the file was overwritten by checking file modification or size change.
     """
-    # Clean up before each example
-    temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
+    workspace, file_saver = _make_workspace()
 
     try:
-        # Save first version
         result1 = asyncio.run(file_saver.save_file(path, content1))
         local_path1 = Path(result1.local_path)
         first_mtime = local_path1.stat().st_mtime
 
-        # Small delay to ensure different modification time
         import time
-
         time.sleep(0.01)
 
-        # Save second version
         result2 = asyncio.run(file_saver.save_file(path, content2))
         local_path2 = Path(result2.local_path)
 
-        # Verify same path
-        assert (
-            result1.local_path == result2.local_path
-        ), "Both saves should use the same local path"
+        assert result1.local_path == result2.local_path
+        assert local_path1.exists()
+        assert local_path1 == local_path2
 
-        # Verify only one file exists
-        assert local_path1.exists(), "File should exist"
-        assert local_path1 == local_path2, "Should be the same file"
-
-        # Verify file was modified (overwritten)
         second_mtime = local_path2.stat().st_mtime
-        assert (
-            second_mtime >= first_mtime
-        ), "File should have been modified (overwritten)"
+        assert second_mtime >= first_mtime
 
     except SecurityError:
-        # If path validation fails, that's acceptable
         pass
+    finally:
+        _cleanup_workspace(workspace)
 
 
 # Property 8: Size Limit Enforcement
 @given(
     path=nested_path_strategy,
-    size_multiplier=st.integers(min_value=11, max_value=20),  # 11MB to 20MB
+    size_multiplier=st.integers(min_value=11, max_value=20),
 )
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_property_size_limit_enforcement(
-    file_saver, cleanup_temp_dir, path, size_multiplier
-):
+def test_property_size_limit_enforcement(path, size_multiplier):
     """
     Property 8: Size Limit Enforcement
 
     For any file exceeding max_file_size, verify:
     - SecurityError is raised
-    - No file written to disk when size limit exceeded
+    - No file written to disk
 
     Validates: Requirements 4.3
     """
-    # Clean up before each example
-    temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
-    # Create content larger than 10MB limit
+    workspace, file_saver = _make_workspace()
     content = "a" * (size_multiplier * 1024 * 1024)
 
     try:
@@ -328,20 +283,17 @@ def test_property_size_limit_enforcement(
 
         assert "exceeds limit" in str(exc_info.value)
 
-        # Verify no file was written
         sanitized_path = path.lstrip("/").replace("\\", "/")
-        potential_file = temp_dir / sanitized_path
-
-        assert (
-            not potential_file.exists()
-        ), "No file should be written when size limit exceeded"
+        potential_file = workspace / sanitized_path
+        assert not potential_file.exists()
 
     except SecurityError as e:
-        # If path validation fails first, that's also acceptable
         if "Invalid path" in str(e):
             pass
         else:
             raise
+    finally:
+        _cleanup_workspace(workspace)
 
 
 # Property 9: Path Traversal Prevention
@@ -350,40 +302,31 @@ def test_property_size_limit_enforcement(
     traversal=st.sampled_from(["../", "../..", "..\\", "..\\..", "test/../etc"]),
 )
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_property_path_traversal_prevention(
-    file_saver, cleanup_temp_dir, base_path, traversal
-):
+def test_property_path_traversal_prevention(base_path, traversal):
     """
     Property 9: Path Traversal Prevention
 
     For any path containing traversal sequences, verify:
     - SecurityError is raised
-    - No file written to disk for invalid paths
+    - No file written to disk
 
     Validates: Requirements 4.1
     """
-    # Clean up before each example
-    temp_dir = Path(tempfile.gettempdir()) / "ha-dev-tools"
-    if temp_dir.exists():
-        import shutil
-
-        shutil.rmtree(temp_dir, ignore_errors=True)
-
+    workspace, file_saver = _make_workspace()
     content = "test content"
     remote_path = (
         f"{base_path}/{traversal}/passwd" if base_path else f"{traversal}/passwd"
     )
 
-    # Should always raise SecurityError
-    with pytest.raises(SecurityError) as exc_info:
-        asyncio.run(file_saver.save_file(remote_path, content))
+    try:
+        with pytest.raises(SecurityError) as exc_info:
+            asyncio.run(file_saver.save_file(remote_path, content))
 
-    assert "Invalid path" in str(exc_info.value)
+        assert "Invalid path" in str(exc_info.value)
 
-    # Verify no file was written anywhere
-    if temp_dir.exists():
-        # Check that no suspicious files were created
-        for file_path in temp_dir.rglob("*"):
-            if file_path.is_file():
-                # Ensure no files contain traversal attempts in their path
-                assert ".." not in str(file_path.relative_to(temp_dir))
+        if workspace.exists():
+            for file_path in workspace.rglob("*"):
+                if file_path.is_file():
+                    assert ".." not in str(file_path.relative_to(workspace))
+    finally:
+        _cleanup_workspace(workspace)
