@@ -240,6 +240,7 @@ def test_property_overwrite_behavior(path, content1, content2):
         first_mtime = local_path1.stat().st_mtime
 
         import time
+
         time.sleep(0.01)
 
         result2 = asyncio.run(file_saver.save_file(path, content2))

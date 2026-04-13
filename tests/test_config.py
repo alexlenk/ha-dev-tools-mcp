@@ -227,6 +227,7 @@ class TestMaxFileSizeConfig:
 
         assert "MAX_FILE_SIZE must be at least" in str(exc_info.value)
 
+
 class TestWorkspaceDirConfig:
     """Tests for workspace_dir configuration."""
 

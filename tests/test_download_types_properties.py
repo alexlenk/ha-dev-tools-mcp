@@ -216,9 +216,7 @@ def test_save_result_serialization_preserves_types(result):
     assert isinstance(reconstructed.remote_path, str) and isinstance(
         result.remote_path, str
     )
-    assert isinstance(reconstructed.checksum, str) and isinstance(
-        result.checksum, str
-    )
+    assert isinstance(reconstructed.checksum, str) and isinstance(result.checksum, str)
 
 
 def test_save_config_default_values():

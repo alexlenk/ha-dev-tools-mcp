@@ -98,4 +98,9 @@ def load_config() -> ServerConfig:
                 f"MAX_FILE_SIZE must not exceed {max_size} bytes (100MB). Got: {max_file_size}"
             )
 
-    return ServerConfig(ha_url=ha_url, ha_token=ha_token, max_file_size=max_file_size, workspace_dir=os.getenv("HA_WORKSPACE_DIR", "~/ha-dev-workspace/"))
+    return ServerConfig(
+        ha_url=ha_url,
+        ha_token=ha_token,
+        max_file_size=max_file_size,
+        workspace_dir=os.getenv("HA_WORKSPACE_DIR", "~/ha-dev-workspace/"),
+    )

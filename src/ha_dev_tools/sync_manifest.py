@@ -89,7 +89,9 @@ async def resolve_file_group(group: str, api_client) -> List[str]:
             ".storage/timer",
             ".storage/counter",
         )
-        return [p for p in file_paths if any(p.startswith(pfx) for pfx in storage_prefixes)]
+        return [
+            p for p in file_paths if any(p.startswith(pfx) for pfx in storage_prefixes)
+        ]
     elif group == "all":
         return file_paths
 
@@ -148,9 +150,7 @@ class SyncManifest:
         """Write the current manifest to disk, creating directories as needed."""
         self.manifest_dir.mkdir(parents=True, exist_ok=True)
         data = {"files": {k: asdict(v) for k, v in self.entries.items()}}
-        self.manifest_file.write_text(
-            json.dumps(data, indent=2), encoding="utf-8"
-        )
+        self.manifest_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
     # ------------------------------------------------------------------
     # Entry management
@@ -186,9 +186,7 @@ class SyncManifest:
     # Status resolution
     # ------------------------------------------------------------------
 
-    def get_status(
-        self, remote_path: str, current_remote_checksum: str
-    ) -> FileStatus:
+    def get_status(self, remote_path: str, current_remote_checksum: str) -> FileStatus:
         """Determine the sync status of a file.
 
         Args:
