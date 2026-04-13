@@ -113,6 +113,7 @@ def test_property_save_response_completeness(content, file_path):
             local_path=f"/tmp/ha-dev-tools/{file_path}",
             file_size=len(content.encode("utf-8")),
             remote_path=file_path,
+            checksum="a" * 64,
         )
 
         with patch.object(

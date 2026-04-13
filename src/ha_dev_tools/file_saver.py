@@ -1,5 +1,6 @@
 """File saver for saving large files to local temporary directory."""
 
+import hashlib
 import tempfile
 from pathlib import Path
 
@@ -57,10 +58,13 @@ class FileSaver:
         async with aiofiles.open(local_path, "w", encoding="utf-8", newline="") as f:
             await f.write(content)
 
+        checksum = hashlib.sha256(content_bytes).hexdigest()
+
         return SaveResult(
             local_path=str(local_path),
             file_size=len(content_bytes),
             remote_path=remote_path,
+            checksum=checksum,
         )
 
     def _sanitize_path(self, remote_path: str) -> str:

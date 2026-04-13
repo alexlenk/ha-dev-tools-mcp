@@ -32,6 +32,7 @@ async def test_read_config_file_with_save_local_true(manager, mock_connection):
         local_path="/tmp/ha-dev-tools/config.yaml",
         file_size=100,
         remote_path="config.yaml",
+        checksum="a" * 64,
     )
 
     with patch.object(

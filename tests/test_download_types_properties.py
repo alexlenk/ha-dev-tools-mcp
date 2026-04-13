@@ -7,12 +7,15 @@ Validates: Requirements 1.3, 3.1
 
 import json
 
+import pytest
 from hypothesis import given, settings, strategies as st
 
 from ha_dev_tools.types import (
     SaveResult,
     SaveConfig,
     SaveErrorCode,
+    UploadResult,
+    IntegrityError,
 )
 
 # Hypothesis strategies for generating test data
@@ -25,6 +28,7 @@ def save_result_strategy(draw):
         local_path=draw(st.text(min_size=1, max_size=100)),
         file_size=draw(st.integers(min_value=0, max_value=1024 * 1024 * 100)),
         remote_path=draw(st.text(min_size=1, max_size=100)),
+        checksum=draw(st.text(alphabet="0123456789abcdef", min_size=64, max_size=64)),
     )
 
 
@@ -91,6 +95,7 @@ def test_save_result_json_roundtrip(result):
     assert reconstructed.local_path == result.local_path
     assert reconstructed.file_size == result.file_size
     assert reconstructed.remote_path == result.remote_path
+    assert reconstructed.checksum == result.checksum
 
 
 @given(config=save_config_strategy())
@@ -126,14 +131,19 @@ def test_save_result_has_required_fields(result):
     assert hasattr(result, "local_path")
     assert hasattr(result, "file_size")
     assert hasattr(result, "remote_path")
+    assert hasattr(result, "checksum")
 
     # Fields should have correct types
     assert isinstance(result.local_path, str)
     assert isinstance(result.file_size, int)
     assert isinstance(result.remote_path, str)
+    assert isinstance(result.checksum, str)
 
     # File size should be non-negative
     assert result.file_size >= 0
+
+    # Checksum should be 64-char hex string (SHA-256)
+    assert len(result.checksum) == 64
 
 
 @given(config=save_config_strategy())
@@ -206,6 +216,9 @@ def test_save_result_serialization_preserves_types(result):
     assert isinstance(reconstructed.remote_path, str) and isinstance(
         result.remote_path, str
     )
+    assert isinstance(reconstructed.checksum, str) and isinstance(
+        result.checksum, str
+    )
 
 
 def test_save_config_default_values():
@@ -225,3 +238,63 @@ def test_save_config_default_values():
 
     # Defaults should be valid
     assert default_config.max_file_size <= default_config.max_file_size_limit
+
+
+# --- UploadResult and IntegrityError tests ---
+
+
+@st.composite
+def upload_result_strategy(draw):
+    """Generate random UploadResult instances."""
+    return UploadResult(
+        local_path=draw(st.text(min_size=1, max_size=100)),
+        remote_path=draw(st.text(min_size=1, max_size=100)),
+        file_size=draw(st.integers(min_value=0, max_value=1024 * 1024 * 100)),
+        checksum=draw(st.text(alphabet="0123456789abcdef", min_size=64, max_size=64)),
+        verified=draw(st.booleans()),
+        write_result=draw(
+            st.fixed_dictionaries({"status": st.text(min_size=1, max_size=20)})
+        ),
+    )
+
+
+@given(result=upload_result_strategy())
+@settings(max_examples=100)
+def test_upload_result_json_roundtrip(result):
+    """Property: UploadResult round-trips through JSON serialization."""
+    serialized = serialize_dataclass(result)
+    json_str = json.dumps(serialized)
+    deserialized_dict = json.loads(json_str)
+    reconstructed = deserialize_to_type(deserialized_dict, UploadResult)
+
+    assert reconstructed.local_path == result.local_path
+    assert reconstructed.remote_path == result.remote_path
+    assert reconstructed.file_size == result.file_size
+    assert reconstructed.checksum == result.checksum
+    assert reconstructed.verified == result.verified
+    assert reconstructed.write_result == result.write_result
+
+
+@given(result=upload_result_strategy())
+@settings(max_examples=100)
+def test_upload_result_has_required_fields(result):
+    """Property: UploadResult has all required fields with correct types."""
+    assert isinstance(result.local_path, str)
+    assert isinstance(result.remote_path, str)
+    assert isinstance(result.file_size, int)
+    assert isinstance(result.checksum, str)
+    assert isinstance(result.verified, bool)
+    assert isinstance(result.write_result, dict)
+    assert result.file_size >= 0
+    assert len(result.checksum) == 64
+
+
+def test_integrity_error_is_exception():
+    """IntegrityError should be a proper Exception subclass."""
+    err = IntegrityError("checksum mismatch")
+    assert isinstance(err, Exception)
+    assert str(err) == "checksum mismatch"
+
+    # Should be raisable and catchable
+    with pytest.raises(IntegrityError):
+        raise IntegrityError("test")

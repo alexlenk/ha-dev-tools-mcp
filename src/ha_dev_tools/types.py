@@ -266,6 +266,25 @@ class SaveResult:
     local_path: str
     file_size: int
     remote_path: str
+    checksum: str  # SHA-256 hex digest
+
+
+@dataclass
+class UploadResult:
+    """Result of a file upload operation."""
+
+    local_path: str
+    remote_path: str
+    file_size: int
+    checksum: str  # SHA-256 hex digest
+    verified: bool
+    write_result: dict  # response from write_config_file API
+
+
+class IntegrityError(Exception):
+    """Raised when file integrity validation fails (e.g., checksum mismatch)."""
+
+    pass
 
 
 @dataclass
