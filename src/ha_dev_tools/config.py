@@ -19,12 +19,14 @@ class ServerConfig:
         ha_token: Home Assistant long-lived access token for authentication
         request_timeout: Timeout in seconds for HTTP requests (default: 30)
         max_file_size: Maximum file size in bytes for file save operations (default: 10MB)
+        workspace_dir: Local workspace directory for synced HA files (default: ~/ha-dev-workspace/)
     """
 
     ha_url: str
     ha_token: str
     request_timeout: int = 30
     max_file_size: int = 10 * 1024 * 1024  # 10MB default
+    workspace_dir: str = "~/ha-dev-workspace/"
 
 
 def load_config() -> ServerConfig:
@@ -34,6 +36,7 @@ def load_config() -> ServerConfig:
     - HA_URL: Home Assistant instance URL
     - HA_TOKEN: Home Assistant long-lived access token
     - MAX_FILE_SIZE: Maximum file size in bytes (optional, default: 10MB)
+    - HA_WORKSPACE_DIR: Local workspace directory (optional, default: ~/ha-dev-workspace/)
 
     Returns:
         ServerConfig: Validated configuration object
@@ -95,4 +98,4 @@ def load_config() -> ServerConfig:
                 f"MAX_FILE_SIZE must not exceed {max_size} bytes (100MB). Got: {max_file_size}"
             )
 
-    return ServerConfig(ha_url=ha_url, ha_token=ha_token, max_file_size=max_file_size)
+    return ServerConfig(ha_url=ha_url, ha_token=ha_token, max_file_size=max_file_size, workspace_dir=os.getenv("HA_WORKSPACE_DIR", "~/ha-dev-workspace/"))

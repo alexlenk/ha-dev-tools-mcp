@@ -226,3 +226,53 @@ class TestMaxFileSizeConfig:
             load_config()
 
         assert "MAX_FILE_SIZE must be at least" in str(exc_info.value)
+
+class TestWorkspaceDirConfig:
+    """Tests for workspace_dir configuration."""
+
+    def test_default_workspace_dir(self, monkeypatch):
+        """Test that default workspace_dir is ~/ha-dev-workspace/."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.delenv("HA_WORKSPACE_DIR", raising=False)
+
+        config = load_config()
+
+        assert config.workspace_dir == "~/ha-dev-workspace/"
+
+    def test_custom_workspace_dir(self, monkeypatch):
+        """Test that HA_WORKSPACE_DIR environment variable overrides default."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("HA_WORKSPACE_DIR", "/opt/ha-workspace/")
+
+        config = load_config()
+
+        assert config.workspace_dir == "/opt/ha-workspace/"
+
+    def test_workspace_dir_with_tilde(self, monkeypatch):
+        """Test that workspace_dir preserves tilde for later expansion."""
+        monkeypatch.setenv("HA_URL", "http://homeassistant.local:8123")
+        monkeypatch.setenv("HA_TOKEN", "test_token")
+        monkeypatch.setenv("HA_WORKSPACE_DIR", "~/custom-workspace/")
+
+        config = load_config()
+
+        assert config.workspace_dir == "~/custom-workspace/"
+
+    def test_workspace_dir_dataclass_default(self):
+        """Test ServerConfig dataclass has correct workspace_dir default."""
+        config = ServerConfig(
+            ha_url="http://homeassistant.local:8123",
+            ha_token="test_token",
+        )
+        assert config.workspace_dir == "~/ha-dev-workspace/"
+
+    def test_workspace_dir_dataclass_custom(self):
+        """Test ServerConfig dataclass accepts custom workspace_dir."""
+        config = ServerConfig(
+            ha_url="http://homeassistant.local:8123",
+            ha_token="test_token",
+            workspace_dir="/tmp/test-workspace/",
+        )
+        assert config.workspace_dir == "/tmp/test-workspace/"
