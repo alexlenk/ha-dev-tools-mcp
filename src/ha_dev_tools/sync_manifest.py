@@ -49,6 +49,54 @@ FILE_GROUPS: Dict[str, List[str]] = {
 }
 
 
+async def resolve_file_group(group: str, api_client) -> List[str]:
+    """Resolve a file group name to a list of remote file paths.
+
+    Static groups (``core``) return a hardcoded list.  Dynamic groups
+    (``packages``, ``dashboards``, ``storage``, ``all``) query the HA
+    instance via *api_client* and filter the results.
+
+    Args:
+        group: One of the keys in :data:`FILE_GROUPS`.
+        api_client: An object with an ``async list_files(directory)`` method
+            that returns ``List[Dict[str, Any]]`` with a ``"path"`` key.
+
+    Returns:
+        List of remote file path strings.
+
+    Raises:
+        ValueError: If *group* is not a recognised group name.
+    """
+    if group == "core":
+        return list(FILE_GROUPS["core"])
+
+    if group not in FILE_GROUPS:
+        raise ValueError(f"Unknown file group: {group}")
+
+    all_files = await api_client.list_files("")
+    file_paths = [f["path"] for f in all_files]
+
+    if group == "packages":
+        return [p for p in file_paths if p.startswith("packages/")]
+    elif group == "dashboards":
+        return [p for p in file_paths if ".storage/lovelace" in p]
+    elif group == "storage":
+        storage_prefixes = (
+            ".storage/automation",
+            ".storage/script",
+            ".storage/scene",
+            ".storage/input_",
+            ".storage/timer",
+            ".storage/counter",
+        )
+        return [p for p in file_paths if any(p.startswith(pfx) for pfx in storage_prefixes)]
+    elif group == "all":
+        return file_paths
+
+    # Shouldn't reach here given the earlier check, but be safe
+    raise ValueError(f"Unknown file group: {group}")
+
+
 def _compute_file_checksum(path: Path) -> str:
     """Compute SHA-256 hex digest of a local file.
 
