@@ -1,7 +1,6 @@
 """Unit tests for FileUploader class."""
 
 import hashlib
-from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest
@@ -173,7 +172,7 @@ async def test_checksum_matches_content(uploader, mock_api_client, local_file):
 @pytest.mark.asyncio
 async def test_upload_preserves_utf8_content(uploader, mock_api_client, tmp_path):
     """Test that UTF-8 content is preserved through upload."""
-    content = "name: \"Café ☕\"\nlocation: \"Zürich 🇨🇭\"\n"
+    content = 'name: "Café ☕"\nlocation: "Zürich 🇨🇭"\n'
     file_path = tmp_path / "utf8.yaml"
     file_path.write_text(content, encoding="utf-8")
 
